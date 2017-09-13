@@ -13,6 +13,12 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        self.edgesForExtendedLayout = [];
+
+        title = "Collections Viewer"
+        if let nb = self.navigationController?.navigationBar {
+            nb.isTranslucent = false
+        }
     }
 
     override func didReceiveMemoryWarning() {
