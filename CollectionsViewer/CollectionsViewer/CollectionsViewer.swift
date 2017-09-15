@@ -13,8 +13,7 @@ private let reuseIdentifier = "Cell"
 class CollectionsViewer: UICollectionViewController {
 
     static public func show(in view: UIView?, of viewController: UIViewController?) -> CollectionsViewer {
-        let layout = UICollectionViewFlowLayout()
-        layout.itemSize = CGSize(width: 250, height: 50)
+        let layout = CollectionsViewerLayout()
 
         let vc = CollectionsViewer(collectionViewLayout: layout)
         viewController?.addChildViewController(vc)
@@ -35,6 +34,20 @@ class CollectionsViewer: UICollectionViewController {
 
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
+
+        let _ = (collectionView?.collectionViewLayout as? CollectionsViewerLayout)?
+                .configureCellViewAttributes { indexPath, width in
+                    let attrs = CollectionsViewerLayoutAttributes(forCellWith: indexPath)
+                    attrs.frame = CGRect(x: 0, y: 0, width: width, height: 50)
+                    return attrs
+                }.configureColumnsNum {
+                    if UIDevice.current.orientation == .portrait {
+                        return UIDevice.current.userInterfaceIdiom == .pad ? 2 : 1
+                    } else {
+                        return UIDevice.current.userInterfaceIdiom == .pad ? 4 : 2
+                    }
+                }
+                .configureCellPadding(6)
 
         // Register cell classes
         self.collectionView!.register(UICollectionViewCell.self, forCellWithReuseIdentifier: reuseIdentifier)
