@@ -7,43 +7,13 @@
 //
 
 import UIKit
+import AVFoundation
 
 class NumberTwoExampleCellScreen: UIViewController {
     
     let len = 10
-    private let allData = [
-        "01 text",
-        "02 text text",
-        "03 text text text ",
-        "04 text text text text",
-        "05 text text text text text",
-        "06 text text text text text text",
-        "07 text text text text text text text",
-        "08 text text text text text text text text",
-        "09 text text text text text text text text text",
-        "10 text text text text text text text text text text",
-        "11 text text text text text text text text text text text",
-        "12 text text text text text text text text text text text text",
-        "13 text text text text text text text text text text text text text",
-        "14 text text text text text text text text text text text text text text",
-        "15 text text text text text text text text text text text text text text text",
-        "16 text text text text text text text text text text text text text text text text",
-        "17 text text text text text text text text text text text text text text text text text",
-        "18 text text text text text text text text text text text text text text text text text text",
-        "19 text text text text text text text text text text text text text text text text text text text",
-        "20 text text text text text text text text text text text text text text text text text text text text",
-        "21 text text text text text text text text text text text text text text text text text text text text text",
-        "22 text text text text text text text text text text text text text text text text text text text text text text",
-        "23 text text text text text text text text text text text text text text text text text text text text text text text",
-        "24 text text text text text text text text text text text text text text text text text text text text text text text text",
-        "25 text text text text text text text text text text text text text text text text text text text text text text text text text",
-        "26 text text text text text text text text text text text text text text text text text text text text text text text text text text",
-        "27 text text text text text text text text text text text text text text text text text text text text text text text text text text text",
-        "28 text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
-        "29 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
-        "30 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
-    ]
-    
+    let allItems = ExampleTwoItem.allItems();
+
     var collectionsViewer: CollectionsViewer?
 
     static func show(in viewController: UIViewController?) {
@@ -54,36 +24,48 @@ class NumberTwoExampleCellScreen: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         self.edgesForExtendedLayout = [];
-
         title = "Cell Number Two Example"
         if let nb = self.navigationController?.navigationBar {
             nb.isTranslucent = false
         }
 
-        collectionsViewer = CollectionsViewer.create(for: allData)
+        collectionsViewer = CollectionsViewer.create(for: allItems)
+            .configureCollectionView { collectionView in
+                if let patternImage = UIImage(named: "pattern") {
+                    collectionView.backgroundColor = UIColor(patternImage: patternImage)
+                }
+            }
             .cell(nibNameAndIdentifier: NumberTwoExampleCell.NIB_NAME)
             .cell(padding: 6)
             .cell(configuration: { cell, indexPath, viewer in
-                let text: String = viewer.data?[indexPath.row] as? String ?? ""
                 let cell = cell as! NumberTwoExampleCell
-                cell.backgroundColor = UIColor.gray
-                cell.text = text
+                cell.backgroundColor = UIColor.white
+                cell.layer.cornerRadius = 4
+                cell.layer.masksToBounds = true
+                cell.exampleTwoItem = viewer.data?[indexPath.row] as? ExampleTwoItem
                 return cell
             }).cell(selected: { indexPath, viewer in
-                let text: String = viewer.data?[indexPath.row] as? String ?? ""
+                let text: String = (viewer.data?[indexPath.row] as? ExampleTwoItem)?.text ?? ""
                 CellDetailsScreen.show(in: self).text = text
             }).cell(viewAttributes: { indexPath, width in
-                let text: String = self.collectionsViewer?.data?[indexPath.row] as? String ?? ""
-                var totalHeight: CGFloat = 0
+                let exampleTwoItem = self.collectionsViewer?.data?[indexPath.row] as! ExampleTwoItem
 
-                let font = UIFont.systemFont(ofSize: 17.0)
-                let textHeight = UICollectionViewCell.heightFor(text, with: font, and: width)
+                let imageRect = UICollectionViewCell.rectFor(exampleTwoItem.image, with: width, and: CGFloat.greatestFiniteMagnitude)
+                var totalHeight = imageRect.height
+
+                var font = UIFont.systemFont(ofSize: 17.0)
+                let titleHeight = UICollectionViewCell.heightFor(exampleTwoItem.title , with: font, and: width)
+                totalHeight += titleHeight
+
+                font = UIFont.systemFont(ofSize: 15.0)
+                let textHeight = UICollectionViewCell.heightFor(exampleTwoItem.text , with: font, and: width)
                 totalHeight += textHeight
 
                 let attrs = CollectionsViewerLayoutAttributes(forCellWith: indexPath)
                 attrs.frame = CGRect(x: 0, y: 0, width: width, height: totalHeight)
                 attrs.dimensions = [
-                    NumberTwoExampleCell.TEXTVIEWHEIGHT : textHeight
+                    NumberTwoExampleCell.IMAGEVIEWHEIGHT : imageRect.height,
+                    NumberTwoExampleCell.TEXTVIEWHEIGHT : textHeight,
                 ]
                 return attrs
             }).columnsNum {
@@ -93,6 +75,8 @@ class NumberTwoExampleCellScreen: UIViewController {
                     return UIDevice.current.userInterfaceIdiom == .pad ? 4 : 2
                 }
             }.show(in: self.view, of: self)
+
+        collectionsViewer?.view.backgroundColor = UIColor.green
     }
 
     override func didReceiveMemoryWarning() {
@@ -101,18 +85,71 @@ class NumberTwoExampleCellScreen: UIViewController {
     }
 }
 
+extension UIImage {
+    var decompressedImage: UIImage {
+        UIGraphicsBeginImageContextWithOptions(size, true, 0)
+        draw(at: CGPoint.zero)
+        let decompressedImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return decompressedImage!
+    }
+}
+
+class ExampleTwoItem {
+
+    class func allItems() -> [ExampleTwoItem] {
+        var items = [ExampleTwoItem]()
+        if let URL = Bundle.main.url(forResource: "NumberTwoExampleCellData", withExtension: "plist") {
+            if let itemsFromPlist = NSArray(contentsOf: URL) {
+                for dictionary in itemsFromPlist {
+                    let photo = ExampleTwoItem(dictionary: dictionary as! NSDictionary)
+                    items.append(photo)
+                }
+            }
+        }
+        return items
+    }
+
+    var title: String
+    var text: String
+    var image: UIImage
+    var scaledImage: UIImage
+
+    init(caption: String, comment: String, image: UIImage) {
+        self.title = caption
+        self.text = comment
+        self.image = image
+        self.scaledImage = image
+    }
+
+    convenience init(dictionary: NSDictionary) {
+        let caption = dictionary["Title"] as? String
+        let comment = dictionary["Text"] as? String
+        let imageName = dictionary["Image"] as? String
+        let image = UIImage(named: imageName!)?.decompressedImage
+        self.init(caption: caption!, comment: comment!, image: image!)
+    }
+}
+
 class NumberTwoExampleCell: UICollectionViewCell {
 
     public static let NIB_NAME = "NumberTwoExampleCell"
+
+    public static let IMAGEVIEWHEIGHT = "imageHeight"
     public static let TEXTVIEWHEIGHT = "textLabelHeight"
 
+    @IBOutlet public weak var image: UIImageView?
+    @IBOutlet public weak var imageHeightLayoutConstraint: NSLayoutConstraint?
+    @IBOutlet public weak var titleLabel: UILabel?
     @IBOutlet public weak var textLabel: UILabel?
     @IBOutlet public weak var textLabelHeightLayoutConstraint: NSLayoutConstraint?
 
-    var text: String? {
+    var exampleTwoItem: ExampleTwoItem? {
         didSet {
-            if let text = text {
-                textLabel?.text = text
+            if let exampleTwoItem = exampleTwoItem {
+                titleLabel?.text = exampleTwoItem.title
+                textLabel?.text = exampleTwoItem.text
+                image?.image = exampleTwoItem.image
             }
         }
     }
@@ -121,7 +158,8 @@ class NumberTwoExampleCell: UICollectionViewCell {
         super.apply(layoutAttributes)
 
         if let attrs = layoutAttributes as? CollectionsViewerLayoutAttributes {
-            textLabelHeightLayoutConstraint?.constant = attrs.dimensions[NumberOneExampleCell.TEXTVIEWHEIGHT] ?? 0
+            imageHeightLayoutConstraint?.constant = attrs.dimensions[NumberTwoExampleCell.IMAGEVIEWHEIGHT] ?? 0
+            textLabelHeightLayoutConstraint?.constant = attrs.dimensions[NumberTwoExampleCell.TEXTVIEWHEIGHT] ?? 0
         }
     }
 }

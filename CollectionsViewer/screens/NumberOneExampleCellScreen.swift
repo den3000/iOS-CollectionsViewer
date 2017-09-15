@@ -61,6 +61,9 @@ class NumberOneExampleCellScreen: UIViewController {
         }
 
         collectionsViewer = CollectionsViewer.create(for: allData)
+            .configureCollectionView { collectionView in
+                collectionView.backgroundColor = UIColor.white
+            }
             .cell(nibNameAndIdentifier: NumberOneExampleCell.NIB_NAME)
             .cell(padding: 6)
             .cell(configuration: { cell, indexPath, viewer in
