@@ -16,8 +16,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-
-        let vc = ViewController(nibName: nil, bundle: nil)
+        let vc = CellNumberOneExampleScreen(nibName: nil, bundle: nil)
         appRootVc = UINavigationController(rootViewController: vc)
         self.window = UIWindow(frame: UIScreen.main.bounds);
         self.window?.rootViewController = appRootVc
