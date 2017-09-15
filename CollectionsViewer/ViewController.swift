@@ -9,6 +9,7 @@
 import UIKit
 
 class ViewController: UIViewController {
+    var collectionsViewer: CollectionsViewer?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -19,6 +20,8 @@ class ViewController: UIViewController {
         if let nb = self.navigationController?.navigationBar {
             nb.isTranslucent = false
         }
+
+        collectionsViewer = CollectionsViewer.show(in: self.view, of: self)
     }
 
     override func didReceiveMemoryWarning() {
