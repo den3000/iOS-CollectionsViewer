@@ -8,14 +8,15 @@
 
 import UIKit
 
-private let reuseIdentifier = "Cell"
-
 class CollectionsViewer: UICollectionViewController {
 
-    static public func show(in view: UIView?, of viewController: UIViewController?) -> CollectionsViewer {
+    public internal(set) var data: [Any]?
+
+    static public func show(_ data: [Any], in view: UIView?, of viewController: UIViewController?) -> CollectionsViewer {
         let layout = CollectionsViewerLayout()
 
         let vc = CollectionsViewer(collectionViewLayout: layout)
+        vc.data = data
         viewController?.addChildViewController(vc)
         view?.addSubview(vc.view)
 
@@ -34,23 +35,6 @@ class CollectionsViewer: UICollectionViewController {
 
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
-
-        let _ = (collectionView?.collectionViewLayout as? CollectionsViewerLayout)?
-                .configureCellViewAttributes { indexPath, width in
-                    let attrs = CollectionsViewerLayoutAttributes(forCellWith: indexPath)
-                    attrs.frame = CGRect(x: 0, y: 0, width: width, height: 50)
-                    return attrs
-                }.configureColumnsNum {
-                    if UIDevice.current.orientation == .portrait {
-                        return UIDevice.current.userInterfaceIdiom == .pad ? 2 : 1
-                    } else {
-                        return UIDevice.current.userInterfaceIdiom == .pad ? 4 : 2
-                    }
-                }
-                .configureCellPadding(6)
-
-        // Register cell classes
-        self.collectionView!.register(UICollectionViewCell.self, forCellWithReuseIdentifier: reuseIdentifier)
         self.collectionView!.backgroundColor = UIColor.white
     }
 
@@ -68,12 +52,13 @@ extension CollectionsViewer {
 
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 10
+        return data?.count ?? 0
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath)
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NumberOneExampleCell.NIB_NAME, for: indexPath) as! NumberOneExampleCell
         cell.backgroundColor = UIColor.gray
+        cell.text = data?[indexPath.row] as? String ?? ""
         return cell
     }
 }
