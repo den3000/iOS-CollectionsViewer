@@ -24,7 +24,6 @@
 		6C404E321F6C27820023807F /* StartScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6C404E301F6C27820023807F /* StartScreen.xib */; };
 		6C404E351F6C36E60023807F /* CellDetailsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C404E331F6C36E60023807F /* CellDetailsScreen.swift */; };
 		6C404E361F6C36E60023807F /* CellDetailsScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6C404E341F6C36E60023807F /* CellDetailsScreen.xib */; };
-		6C404E391F6C45F60023807F /* Pattern.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6C404E381F6C45F60023807F /* Pattern.xcassets */; };
 		6C404E3B1F6C46470023807F /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6C404E3A1F6C46470023807F /* Images.xcassets */; };
 		6C404E411F6C48A70023807F /* NumberTwoExampleCellData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 6C404E401F6C48A70023807F /* NumberTwoExampleCellData.plist */; };
 /* End PBXBuildFile section */
@@ -49,7 +48,6 @@
 		6C404E301F6C27820023807F /* StartScreen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = StartScreen.xib; sourceTree = "<group>"; };
 		6C404E331F6C36E60023807F /* CellDetailsScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CellDetailsScreen.swift; sourceTree = "<group>"; };
 		6C404E341F6C36E60023807F /* CellDetailsScreen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = CellDetailsScreen.xib; sourceTree = "<group>"; };
-		6C404E381F6C45F60023807F /* Pattern.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Pattern.xcassets; sourceTree = "<group>"; };
 		6C404E3A1F6C46470023807F /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		6C404E401F6C48A70023807F /* NumberTwoExampleCellData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = NumberTwoExampleCellData.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -134,7 +132,6 @@
 		6C404E371F6C429B0023807F /* Assets */ = {
 			isa = PBXGroup;
 			children = (
-				6C404E381F6C45F60023807F /* Pattern.xcassets */,
 				6C404E3A1F6C46470023807F /* Images.xcassets */,
 				6C404E401F6C48A70023807F /* NumberTwoExampleCellData.plist */,
 			);
@@ -207,7 +204,6 @@
 				6C404E3B1F6C46470023807F /* Images.xcassets in Resources */,
 				6C404E361F6C36E60023807F /* CellDetailsScreen.xib in Resources */,
 				6C404E2E1F6BEEC80023807F /* NumberOneExampleCell.xib in Resources */,
-				6C404E391F6C45F60023807F /* Pattern.xcassets in Resources */,
 				6C404E121F6917230023807F /* Main.storyboard in Resources */,
 				6C404E411F6C48A70023807F /* NumberTwoExampleCellData.plist in Resources */,
 				6961D537B60F5FAB29D2848F /* NumberTwoExampleCell.xib in Resources */,

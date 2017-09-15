@@ -16,6 +16,7 @@ class CollectionsViewer: UICollectionViewController {
     public var cellNibName: String?
     public var funcConfigureCellCallback: ((UICollectionViewCell, IndexPath, CollectionsViewer) -> UICollectionViewCell)?
     public var funcCellSelectedCallback: ((IndexPath, CollectionsViewer) -> Void)?
+    public var funcConfigureCollectionViewCallback: ((UICollectionView) -> Void)?
 
     static public func create(for data: [Any]) -> CollectionsViewer {
         let layout = CollectionsViewerLayout()
@@ -43,11 +44,12 @@ class CollectionsViewer: UICollectionViewController {
 
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
-        self.collectionView!.backgroundColor = UIColor.white
 
         if cellNibName != nil && cellIdentifier != nil {
             collectionView?.register(UINib(nibName: cellNibName!, bundle: nil), forCellWithReuseIdentifier: cellIdentifier!)
         }
+
+        funcConfigureCollectionViewCallback?(collectionView!)
     }
 
     override func didReceiveMemoryWarning() {
@@ -68,6 +70,11 @@ class CollectionsViewer: UICollectionViewController {
 
     func cell(selected: @escaping ((IndexPath, CollectionsViewer) -> Void)) -> CollectionsViewer {
         self.funcCellSelectedCallback = selected
+        return self
+    }
+
+    func configureCollectionView(_ callback: @escaping ((UICollectionView) -> Void)) -> CollectionsViewer {
+        self.funcConfigureCollectionViewCallback = callback
         return self
     }
 
