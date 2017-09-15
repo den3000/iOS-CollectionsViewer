@@ -15,6 +15,7 @@ class CollectionsViewer: UICollectionViewController {
     public var cellIdentifier: String?
     public var cellNibName: String?
     public var funcConfigureCellCallback: ((UICollectionViewCell, IndexPath, CollectionsViewer) -> UICollectionViewCell)?
+    public var funcCellSelectedCallback: ((IndexPath, CollectionsViewer) -> Void)?
 
     static public func create(for data: [Any]) -> CollectionsViewer {
         let layout = CollectionsViewerLayout()
@@ -60,8 +61,13 @@ class CollectionsViewer: UICollectionViewController {
         return self
     }
 
-    func cell(_ funcConfigureCellCallback: @escaping ((UICollectionViewCell, IndexPath, CollectionsViewer) -> UICollectionViewCell)) -> CollectionsViewer {
-        self.funcConfigureCellCallback = funcConfigureCellCallback
+    func cell(configuration: @escaping ((UICollectionViewCell, IndexPath, CollectionsViewer) -> UICollectionViewCell)) -> CollectionsViewer {
+        self.funcConfigureCellCallback = configuration
+        return self
+    }
+
+    func cell(selected: @escaping ((IndexPath, CollectionsViewer) -> Void)) -> CollectionsViewer {
+        self.funcCellSelectedCallback = selected
         return self
     }
 
@@ -75,7 +81,7 @@ class CollectionsViewer: UICollectionViewController {
         return self
     }
 
-    func cellViewAttributes(_ callback: @escaping ((IndexPath, CGFloat) -> CollectionsViewerLayoutAttributes)) -> CollectionsViewer {
+    func cell(viewAttributes callback: @escaping ((IndexPath, CGFloat) -> CollectionsViewerLayoutAttributes)) -> CollectionsViewer {
         if let layout = collectionView?.collectionViewLayout as? CollectionsViewerLayout {
             _ = layout.configureCellViewAttributes(callback)
         }
@@ -89,7 +95,7 @@ class CollectionsViewer: UICollectionViewController {
         return self
     }
 
-    func cellPadding(_ padding: CGFloat) -> CollectionsViewer {
+    func cell(padding: CGFloat) -> CollectionsViewer {
         if let layout = collectionView?.collectionViewLayout as? CollectionsViewerLayout {
             _ = layout.configureCellPadding(padding)
         }
@@ -110,6 +116,10 @@ extension CollectionsViewer {
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: self.cellIdentifier ?? "", for: indexPath)
         return funcConfigureCellCallback?(cell, indexPath, self) ?? cell
+    }
+
+    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        funcCellSelectedCallback?(indexPath, self)
     }
 }
 

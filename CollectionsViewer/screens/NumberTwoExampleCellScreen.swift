@@ -62,14 +62,17 @@ class NumberTwoExampleCellScreen: UIViewController {
 
         collectionsViewer = CollectionsViewer.create(for: allData)
             .cell(nibNameAndIdentifier: NumberTwoExampleCell.NIB_NAME)
-            .cellPadding(6)
-            .cell { cell, indexPath, viewer in
+            .cell(padding: 6)
+            .cell(configuration: { cell, indexPath, viewer in
                 let text: String = viewer.data?[indexPath.row] as? String ?? ""
                 let cell = cell as! NumberTwoExampleCell
                 cell.backgroundColor = UIColor.gray
                 cell.text = text
                 return cell
-            }.cellViewAttributes { indexPath, width in
+            }).cell(selected: { indexPath, viewer in
+                let text: String = viewer.data?[indexPath.row] as? String ?? ""
+                print("Selected cell #\(indexPath.row) with text:\t \(text)")
+            }).cell(viewAttributes: { indexPath, width in
                 let text: String = self.collectionsViewer?.data?[indexPath.row] as? String ?? ""
                 var totalHeight: CGFloat = 0
 
@@ -83,7 +86,7 @@ class NumberTwoExampleCellScreen: UIViewController {
                     NumberTwoExampleCell.TEXTVIEWHEIGHT : textHeight
                 ]
                 return attrs
-            }.columnsNum {
+            }).columnsNum {
                 if UIDevice.current.orientation == .portrait {
                     return UIDevice.current.userInterfaceIdiom == .pad ? 2 : 1
                 } else {
