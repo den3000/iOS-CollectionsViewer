@@ -56,31 +56,36 @@ class CellNumberOneExampleScreen: UIViewController {
             nb.isTranslucent = false
         }
 
-        collectionsViewer = CollectionsViewer.show(allData, in: self.view, of: self)
-        collectionsViewer?.collectionView?.register(UINib(nibName: NumberOneExampleCell.NIB_NAME, bundle: nil), forCellWithReuseIdentifier: NumberOneExampleCell.NIB_NAME)
-        let _ = (collectionsViewer?.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?
-                .configureCellViewAttributes { indexPath, width in
-                    let text: String = self.collectionsViewer?.data?[indexPath.row] as? String ?? ""
-                    var totalHeight: CGFloat = 0
+        collectionsViewer = CollectionsViewer.create(for: allData)
+            .cell(nibNameAndIdentifier: NumberOneExampleCell.NIB_NAME)
+            .cellPadding(6)
+            .cell { cell, indexPath, viewer in
+                let text: String = viewer.data?[indexPath.row] as? String ?? ""
+                let cell = cell as! NumberOneExampleCell
+                cell.backgroundColor = UIColor.gray
+                cell.text = text
+                return cell
+            }.cellViewAttributes { indexPath, width in
+                let text: String = self.collectionsViewer?.data?[indexPath.row] as? String ?? ""
+                var totalHeight: CGFloat = 0
 
-                    let font = UIFont.systemFont(ofSize: 17.0)
-                    let textHeight = UICollectionViewCell.heightFor(text, with: font, and: width)
-                    totalHeight += textHeight
+                let font = UIFont.systemFont(ofSize: 17.0)
+                let textHeight = UICollectionViewCell.heightFor(text, with: font, and: width)
+                totalHeight += textHeight
 
-                    let attrs = CollectionsViewerLayoutAttributes(forCellWith: indexPath)
-                    attrs.frame = CGRect(x: 0, y: 0, width: width, height: totalHeight)
-                    attrs.dimensions = [
-                        NumberOneExampleCell.TEXTVIEWHEIGHT : textHeight
-                    ]
-                    return attrs
-                }.configureColumnsNum {
-                    if UIDevice.current.orientation == .portrait {
-                        return UIDevice.current.userInterfaceIdiom == .pad ? 2 : 1
-                    } else {
-                        return UIDevice.current.userInterfaceIdiom == .pad ? 4 : 2
-                    }
+                let attrs = CollectionsViewerLayoutAttributes(forCellWith: indexPath)
+                attrs.frame = CGRect(x: 0, y: 0, width: width, height: totalHeight)
+                attrs.dimensions = [
+                    NumberOneExampleCell.TEXTVIEWHEIGHT : textHeight
+                ]
+                return attrs
+            }.columnsNum {
+                if UIDevice.current.orientation == .portrait {
+                    return UIDevice.current.userInterfaceIdiom == .pad ? 2 : 1
+                } else {
+                    return UIDevice.current.userInterfaceIdiom == .pad ? 4 : 2
                 }
-                .configureCellPadding(6)
+            }.show(in: self.view, of: self)
     }
 
     override func didReceiveMemoryWarning() {

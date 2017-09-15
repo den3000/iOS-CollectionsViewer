@@ -12,22 +12,29 @@ class CollectionsViewer: UICollectionViewController {
 
     public internal(set) var data: [Any]?
 
-    static public func show(_ data: [Any], in view: UIView?, of viewController: UIViewController?) -> CollectionsViewer {
-        let layout = CollectionsViewerLayout()
+    public var cellIdentifier: String?
+    public var cellNibName: String?
+    public var funcConfigureCellCallback: ((UICollectionViewCell, IndexPath, CollectionsViewer) -> UICollectionViewCell)?
 
+    static public func create(for data: [Any]) -> CollectionsViewer {
+        let layout = CollectionsViewerLayout()
         let vc = CollectionsViewer(collectionViewLayout: layout)
         vc.data = data
-        viewController?.addChildViewController(vc)
-        view?.addSubview(vc.view)
+        return vc
+    }
 
-        vc.view.translatesAutoresizingMaskIntoConstraints = false
-        let leadingConstraint = NSLayoutConstraint(item: vc.view, attribute: .leading, relatedBy: .equal, toItem: view, attribute: .leading, multiplier: 1, constant: 0)
-        let trailingConstraint = NSLayoutConstraint(item: vc.view, attribute: .trailing, relatedBy: .equal, toItem: view, attribute: .trailing, multiplier: 1, constant: 0)
-        let topConstraint = NSLayoutConstraint(item: vc.view, attribute: .top, relatedBy: .equal, toItem: view, attribute: .top, multiplier: 1, constant: 0)
-        let bottomConstraint = NSLayoutConstraint(item: vc.view, attribute: .bottom, relatedBy: .equal, toItem: view, attribute: .bottom, multiplier: 1, constant: 0)
+    public func show(in view: UIView?, of viewController: UIViewController?) -> CollectionsViewer {
+        viewController?.addChildViewController(self)
+        view?.addSubview(self.view)
+
+        self.view.translatesAutoresizingMaskIntoConstraints = false
+        let leadingConstraint = NSLayoutConstraint(item: self.view, attribute: .leading, relatedBy: .equal, toItem: view, attribute: .leading, multiplier: 1, constant: 0)
+        let trailingConstraint = NSLayoutConstraint(item: self.view, attribute: .trailing, relatedBy: .equal, toItem: view, attribute: .trailing, multiplier: 1, constant: 0)
+        let topConstraint = NSLayoutConstraint(item: self.view, attribute: .top, relatedBy: .equal, toItem: view, attribute: .top, multiplier: 1, constant: 0)
+        let bottomConstraint = NSLayoutConstraint(item: self.view, attribute: .bottom, relatedBy: .equal, toItem: view, attribute: .bottom, multiplier: 1, constant: 0)
         view?.addConstraints([leadingConstraint, trailingConstraint, topConstraint, bottomConstraint])
 
-        return vc
+        return self
     }
 
     override func viewDidLoad() {
@@ -36,11 +43,57 @@ class CollectionsViewer: UICollectionViewController {
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
         self.collectionView!.backgroundColor = UIColor.white
+
+        if cellNibName != nil && cellIdentifier != nil {
+            collectionView?.register(UINib(nibName: cellNibName!, bundle: nil), forCellWithReuseIdentifier: cellIdentifier!)
+        }
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+
+    func cell(nibNameAndIdentifier: String) -> CollectionsViewer {
+        self.cellIdentifier = nibNameAndIdentifier
+        self.cellNibName = nibNameAndIdentifier
+        return self
+    }
+
+    func cell(_ funcConfigureCellCallback: @escaping ((UICollectionViewCell, IndexPath, CollectionsViewer) -> UICollectionViewCell)) -> CollectionsViewer {
+        self.funcConfigureCellCallback = funcConfigureCellCallback
+        return self
+    }
+
+    func cellIdentifier(_ cellIdentifier: String) -> CollectionsViewer {
+        self.cellIdentifier = cellIdentifier
+        return self
+    }
+
+    func cellNibName(_ cellNibName: String) -> CollectionsViewer {
+        self.cellNibName = cellNibName
+        return self
+    }
+
+    func cellViewAttributes(_ callback: @escaping ((IndexPath, CGFloat) -> CollectionsViewerLayoutAttributes)) -> CollectionsViewer {
+        if let layout = collectionView?.collectionViewLayout as? CollectionsViewerLayout {
+            _ = layout.configureCellViewAttributes(callback)
+        }
+        return self
+    }
+
+    func columnsNum(_ callback: @escaping ((Void) -> Int)) -> CollectionsViewer {
+        if let layout = collectionView?.collectionViewLayout as? CollectionsViewerLayout {
+            _ = layout.configureColumnsNum(callback)
+        }
+        return self
+    }
+
+    func cellPadding(_ padding: CGFloat) -> CollectionsViewer {
+        if let layout = collectionView?.collectionViewLayout as? CollectionsViewerLayout {
+            _ = layout.configureCellPadding(padding)
+        }
+        return self
     }
 }
 
@@ -50,16 +103,13 @@ extension CollectionsViewer {
         return 1
     }
 
-
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return data?.count ?? 0
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NumberOneExampleCell.NIB_NAME, for: indexPath) as! NumberOneExampleCell
-        cell.backgroundColor = UIColor.gray
-        cell.text = data?[indexPath.row] as? String ?? ""
-        return cell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: self.cellIdentifier ?? "", for: indexPath)
+        return funcConfigureCellCallback?(cell, indexPath, self) ?? cell
     }
 }
 
