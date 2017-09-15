@@ -71,7 +71,7 @@ class NumberTwoExampleCellScreen: UIViewController {
                 return cell
             }).cell(selected: { indexPath, viewer in
                 let text: String = viewer.data?[indexPath.row] as? String ?? ""
-                print("Selected cell #\(indexPath.row) with text:\t \(text)")
+                CellDetailsScreen.show(in: self).text = text
             }).cell(viewAttributes: { indexPath, width in
                 let text: String = self.collectionsViewer?.data?[indexPath.row] as? String ?? ""
                 var totalHeight: CGFloat = 0
