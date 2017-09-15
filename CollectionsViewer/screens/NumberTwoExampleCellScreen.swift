@@ -1,5 +1,5 @@
 //
-//  CellNumberOneExampleScreen.swift
+//  NumberOneExampleCellScreen.swift
 //  CollectionsViewer
 //
 //  Created by Denis Suprun on 13/09/17.
@@ -8,7 +8,7 @@
 
 import UIKit
 
-class CellNumberOneExampleScreen: UIViewController {
+class NumberTwoExampleCellScreen: UIViewController {
     
     let len = 10
     private let allData = [
@@ -46,22 +46,26 @@ class CellNumberOneExampleScreen: UIViewController {
     
     var collectionsViewer: CollectionsViewer?
 
+    static func show(in viewController: UIViewController?) {
+        viewController?.navigationController?.pushViewController(NumberTwoExampleCellScreen(nibName: nil, bundle: nil), animated: true)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         self.edgesForExtendedLayout = [];
 
-        title = "Cell Number One Example"
+        title = "Cell Number Two Example"
         if let nb = self.navigationController?.navigationBar {
             nb.isTranslucent = false
         }
 
         collectionsViewer = CollectionsViewer.create(for: allData)
-            .cell(nibNameAndIdentifier: NumberOneExampleCell.NIB_NAME)
+            .cell(nibNameAndIdentifier: NumberTwoExampleCell.NIB_NAME)
             .cellPadding(6)
             .cell { cell, indexPath, viewer in
                 let text: String = viewer.data?[indexPath.row] as? String ?? ""
-                let cell = cell as! NumberOneExampleCell
+                let cell = cell as! NumberTwoExampleCell
                 cell.backgroundColor = UIColor.gray
                 cell.text = text
                 return cell
@@ -76,7 +80,7 @@ class CellNumberOneExampleScreen: UIViewController {
                 let attrs = CollectionsViewerLayoutAttributes(forCellWith: indexPath)
                 attrs.frame = CGRect(x: 0, y: 0, width: width, height: totalHeight)
                 attrs.dimensions = [
-                    NumberOneExampleCell.TEXTVIEWHEIGHT : textHeight
+                    NumberTwoExampleCell.TEXTVIEWHEIGHT : textHeight
                 ]
                 return attrs
             }.columnsNum {
@@ -94,9 +98,9 @@ class CellNumberOneExampleScreen: UIViewController {
     }
 }
 
-class NumberOneExampleCell: UICollectionViewCell {
+class NumberTwoExampleCell: UICollectionViewCell {
 
-    public static let NIB_NAME = "NumberOneExampleCell"
+    public static let NIB_NAME = "NumberTwoExampleCell"
     public static let TEXTVIEWHEIGHT = "textLabelHeight"
 
     @IBOutlet public weak var textLabel: UILabel?
