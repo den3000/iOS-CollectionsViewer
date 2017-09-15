@@ -8,24 +8,24 @@
 
 /* Begin PBXBuildFile section */
 		6C404E0D1F6917230023807F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C404E0C1F6917230023807F /* AppDelegate.swift */; };
-		6C404E0F1F6917230023807F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C404E0E1F6917230023807F /* ViewController.swift */; };
 		6C404E121F6917230023807F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6C404E101F6917230023807F /* Main.storyboard */; };
 		6C404E141F6917230023807F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6C404E131F6917230023807F /* Assets.xcassets */; };
 		6C404E171F6917230023807F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6C404E151F6917230023807F /* LaunchScreen.storyboard */; };
-		6C404E1F1F6921CA0023807F /* ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6C404E1E1F6921CA0023807F /* ViewController.xib */; };
-		6C404E211F692E400023807F /* CollectionsViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C404E201F692E400023807F /* CollectionsViewer.swift */; };
+		6C404E251F6BBB7D0023807F /* CollectionsViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C404E241F6BBB7D0023807F /* CollectionsViewer.swift */; };
+		6C404E281F6BBB9A0023807F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C404E261F6BBB9A0023807F /* ViewController.swift */; };
+		6C404E291F6BBB9A0023807F /* ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6C404E271F6BBB9A0023807F /* ViewController.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		6C404E091F6917230023807F /* CollectionsViewer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CollectionsViewer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C404E0C1F6917230023807F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		6C404E0E1F6917230023807F /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		6C404E111F6917230023807F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		6C404E131F6917230023807F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6C404E161F6917230023807F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		6C404E181F6917230023807F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		6C404E1E1F6921CA0023807F /* ViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ViewController.xib; sourceTree = "<group>"; };
-		6C404E201F692E400023807F /* CollectionsViewer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CollectionsViewer.swift; sourceTree = "<group>"; };
+		6C404E241F6BBB7D0023807F /* CollectionsViewer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CollectionsViewer.swift; sourceTree = "<group>"; };
+		6C404E261F6BBB9A0023807F /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		6C404E271F6BBB9A0023807F /* ViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ViewController.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,14 +58,30 @@
 		6C404E0B1F6917230023807F /* CollectionsViewer */ = {
 			isa = PBXGroup;
 			children = (
+				6C404E231F6BBB650023807F /* CollectionsViewer */,
+				6C404E221F6BBB5A0023807F /* screens */,
 				6C404E0C1F6917230023807F /* AppDelegate.swift */,
-				6C404E0E1F6917230023807F /* ViewController.swift */,
 				6C404E101F6917230023807F /* Main.storyboard */,
 				6C404E131F6917230023807F /* Assets.xcassets */,
 				6C404E151F6917230023807F /* LaunchScreen.storyboard */,
 				6C404E181F6917230023807F /* Info.plist */,
-				6C404E1E1F6921CA0023807F /* ViewController.xib */,
-				6C404E201F692E400023807F /* CollectionsViewer.swift */,
+			);
+			path = CollectionsViewer;
+			sourceTree = "<group>";
+		};
+		6C404E221F6BBB5A0023807F /* screens */ = {
+			isa = PBXGroup;
+			children = (
+				6C404E261F6BBB9A0023807F /* ViewController.swift */,
+				6C404E271F6BBB9A0023807F /* ViewController.xib */,
+			);
+			path = screens;
+			sourceTree = "<group>";
+		};
+		6C404E231F6BBB650023807F /* CollectionsViewer */ = {
+			isa = PBXGroup;
+			children = (
+				6C404E241F6BBB7D0023807F /* CollectionsViewer.swift */,
 			);
 			path = CollectionsViewer;
 			sourceTree = "<group>";
@@ -129,9 +145,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6C404E291F6BBB9A0023807F /* ViewController.xib in Resources */,
 				6C404E171F6917230023807F /* LaunchScreen.storyboard in Resources */,
 				6C404E141F6917230023807F /* Assets.xcassets in Resources */,
-				6C404E1F1F6921CA0023807F /* ViewController.xib in Resources */,
 				6C404E121F6917230023807F /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -143,9 +159,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6C404E0F1F6917230023807F /* ViewController.swift in Sources */,
+				6C404E281F6BBB9A0023807F /* ViewController.swift in Sources */,
 				6C404E0D1F6917230023807F /* AppDelegate.swift in Sources */,
-				6C404E211F692E400023807F /* CollectionsViewer.swift in Sources */,
+				6C404E251F6BBB7D0023807F /* CollectionsViewer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
