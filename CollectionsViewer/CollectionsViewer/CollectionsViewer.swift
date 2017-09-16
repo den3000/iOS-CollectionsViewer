@@ -18,6 +18,9 @@ class CollectionsViewer: UICollectionViewController {
     public var funcCellSelectedCallback: ((IndexPath, CollectionsViewer) -> Void)?
     public var funcConfigureCollectionViewCallback: ((UICollectionView) -> Void)?
 
+    internal var refreshControl: UIRefreshControl?
+    internal var funcPullToRefreshCallback: ((CollectionsViewer) -> ())?
+
     static public func create(for data: [Any]) -> CollectionsViewer {
         let layout = CollectionsViewerLayout()
         let vc = CollectionsViewer(collectionViewLayout: layout)
@@ -48,6 +51,10 @@ class CollectionsViewer: UICollectionViewController {
         if cellNibName != nil && cellIdentifier != nil {
             collectionView?.register(UINib(nibName: cellNibName!, bundle: nil), forCellWithReuseIdentifier: cellIdentifier!)
         }
+
+        // This is required to force UICollectionView scroll
+        // normally when number of items is insufficient
+        collectionView?.alwaysBounceVertical = true
 
         funcConfigureCollectionViewCallback?(collectionView!)
     }
@@ -107,6 +114,47 @@ class CollectionsViewer: UICollectionViewController {
             _ = layout.configureCellPadding(padding)
         }
         return self
+    }
+}
+
+extension CollectionsViewer {
+    public func set(data: [Any], callback: (() -> ())?) {
+        self.data = data
+
+        DispatchQueue.main.async {
+            self.collectionView?.reloadData()
+
+            // Prevent crashes on iOS10+
+            self.collectionViewLayout.invalidateLayout()
+
+            callback?()
+        }
+    }
+}
+
+extension CollectionsViewer {
+
+    // MARK: Pull To Refresh
+    public func enablePullToRefresh(with callback: @escaping ((CollectionsViewer) -> ())) -> CollectionsViewer {
+        if refreshControl == nil {
+            refreshControl = UIRefreshControl()
+            refreshControl?.addTarget(self, action: #selector(onPullToRefresh), for: .valueChanged)
+            collectionView?.addSubview(refreshControl!)
+        }
+        funcPullToRefreshCallback = callback
+        return self
+    }
+
+    public func beginPullToRefresh(){
+        refreshControl?.beginRefreshing()
+    }
+
+    public func endPullToRefresh(){
+        refreshControl?.endRefreshing()
+    }
+
+    @objc internal func onPullToRefresh(sender:AnyObject) {
+        funcPullToRefreshCallback?(self)
     }
 }
 
