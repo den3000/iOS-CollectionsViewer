@@ -10,9 +10,10 @@ import UIKit
 import AVFoundation
 
 class NumberTwoExampleCellScreen: UIViewController {
-    
-    let len = 10
-    let allItems = ExampleTwoItem.allItems();
+
+    private var page = 0;
+    private let len = 10
+    private let allItems = ExampleTwoItem.allItems();
 
     var collectionsViewer: CollectionsViewer?
 
@@ -73,6 +74,17 @@ class NumberTwoExampleCellScreen: UIViewController {
                     return UIDevice.current.userInterfaceIdiom == .pad ? 2 : 1
                 } else {
                     return UIDevice.current.userInterfaceIdiom == .pad ? 4 : 2
+                }
+            }.enablePullToRefresh { viewer in
+                DispatchQueue.global(qos: .userInitiated).async {
+                    self.page = 0
+
+                    print("Refresh, page = \(self.page)")
+                    sleep(2)
+
+                    viewer.set(data: Array(self.allItems[0..<10])) {
+                        viewer.endPullToRefresh()
+                    }
                 }
             }.show(in: self.view, of: self)
 
