@@ -11,35 +11,59 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="mjs-ed-vIg" customClass="NumberTwoExampleCell" customModule="CollectionsViewer" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="300" height="50"/>
+            <rect key="frame" x="0.0" y="0.0" width="300" height="202"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                <rect key="frame" x="0.0" y="0.0" width="300" height="50"/>
+                <rect key="frame" x="0.0" y="0.0" width="300" height="202"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Xzv-Dv-4ci">
-                        <rect key="frame" x="8" y="0.0" width="284" height="50"/>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="nl8-nU-Akx">
+                        <rect key="frame" x="0.0" y="0.0" width="300" height="160"/>
                         <constraints>
-                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="50" id="59S-9R-qiu"/>
+                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="160" id="FPV-sg-0ga"/>
+                        </constraints>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nPX-7O-lfd">
+                        <rect key="frame" x="8" y="160" width="284" height="21"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="21" id="L11-LE-wkk"/>
                         </constraints>
                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vzX-5w-ock">
+                        <rect key="frame" x="8" y="181" width="284" height="21"/>
+                        <constraints>
+                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="21" id="Ngq-Yy-GSe"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
                         <nil key="textColor"/>
                         <nil key="highlightedColor"/>
                     </label>
                 </subviews>
             </view>
             <constraints>
-                <constraint firstAttribute="trailing" secondItem="Xzv-Dv-4ci" secondAttribute="trailing" constant="8" id="DIv-bd-IFs"/>
-                <constraint firstItem="Xzv-Dv-4ci" firstAttribute="leading" secondItem="mjs-ed-vIg" secondAttribute="leading" constant="8" id="ZsL-xs-tet"/>
-                <constraint firstAttribute="bottom" secondItem="Xzv-Dv-4ci" secondAttribute="bottom" id="rJi-HF-fWa"/>
-                <constraint firstItem="Xzv-Dv-4ci" firstAttribute="top" secondItem="mjs-ed-vIg" secondAttribute="top" id="ro0-2i-hWx"/>
+                <constraint firstItem="vzX-5w-ock" firstAttribute="leading" secondItem="mjs-ed-vIg" secondAttribute="leading" constant="8" id="0vi-F0-Yar"/>
+                <constraint firstAttribute="trailing" secondItem="vzX-5w-ock" secondAttribute="trailing" constant="8" id="2v4-eh-Vft"/>
+                <constraint firstAttribute="trailing" secondItem="nPX-7O-lfd" secondAttribute="trailing" constant="8" id="CnX-bx-gJ6"/>
+                <constraint firstItem="vzX-5w-ock" firstAttribute="top" secondItem="nPX-7O-lfd" secondAttribute="bottom" id="Mhw-7u-Zds"/>
+                <constraint firstAttribute="trailing" secondItem="nl8-nU-Akx" secondAttribute="trailing" id="Qhf-sS-gMd"/>
+                <constraint firstItem="nl8-nU-Akx" firstAttribute="top" secondItem="mjs-ed-vIg" secondAttribute="top" id="Rdz-l5-E2K"/>
+                <constraint firstItem="nl8-nU-Akx" firstAttribute="leading" secondItem="mjs-ed-vIg" secondAttribute="leading" id="V1l-6q-ZOa"/>
+                <constraint firstItem="nPX-7O-lfd" firstAttribute="top" secondItem="nl8-nU-Akx" secondAttribute="bottom" id="fCZ-dE-q1m"/>
+                <constraint firstItem="nPX-7O-lfd" firstAttribute="leading" secondItem="mjs-ed-vIg" secondAttribute="leading" constant="8" id="k6M-Tv-sO7"/>
+                <constraint firstAttribute="bottom" secondItem="vzX-5w-ock" secondAttribute="bottom" id="mZk-Xq-v7f"/>
             </constraints>
-            <size key="customSize" width="300" height="50"/>
+            <size key="customSize" width="300" height="205"/>
             <connections>
-                <outlet property="textLabel" destination="Xzv-Dv-4ci" id="E9S-Ob-mKI"/>
-                <outlet property="textLabelHeightLayoutConstraint" destination="59S-9R-qiu" id="th4-Rs-UW8"/>
+                <outlet property="image" destination="nl8-nU-Akx" id="UmD-XW-lEg"/>
+                <outlet property="imageHeightLayoutConstraint" destination="FPV-sg-0ga" id="pcr-Yb-gzN"/>
+                <outlet property="textLabel" destination="vzX-5w-ock" id="xfB-1F-v4w"/>
+                <outlet property="textLabelHeightLayoutConstraint" destination="Ngq-Yy-GSe" id="JnL-Ck-M6X"/>
+                <outlet property="titleLabel" destination="nPX-7O-lfd" id="XZ9-cp-gZ1"/>
             </connections>
-            <point key="canvasLocation" x="71" y="-138"/>
+            <point key="canvasLocation" x="71" y="-61"/>
         </collectionViewCell>
     </objects>
 </document>
