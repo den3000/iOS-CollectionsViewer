@@ -9,8 +9,9 @@
 import UIKit
 
 class NumberOneExampleCellScreen: UIViewController {
-    
-    let len = 10
+
+    private var page = 0
+    private let len = 7
     private let allData = [
         "01 text",
         "02 text text",
@@ -42,6 +43,24 @@ class NumberOneExampleCellScreen: UIViewController {
         "28 text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
         "29 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
         "30 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
+        "31 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
+        "32 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
+        "33 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
+        "34 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
+        "35 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
+        "36 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
+        "37 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
+        "38 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
+        "39 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
+        "40 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
+        "41 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
+        "42 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
+        "43 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
+        "44 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
+        "45 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
+        "46 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
+        "47 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
+        "48 text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text",
     ]
     
     var collectionsViewer: CollectionsViewer?
@@ -60,7 +79,8 @@ class NumberOneExampleCellScreen: UIViewController {
             nb.isTranslucent = false
         }
 
-        collectionsViewer = CollectionsViewer.create(for: allData)
+        page = 1
+        collectionsViewer = CollectionsViewer.create(for: Array(allData[0..<len]))
             .configureCollectionView { collectionView in
                 collectionView.backgroundColor = UIColor.white
             }
@@ -95,7 +115,38 @@ class NumberOneExampleCellScreen: UIViewController {
                 } else {
                     return UIDevice.current.userInterfaceIdiom == .pad ? 4 : 2
                 }
-            }.show(in: self.view, of: self)
+            }.enablePullToRefresh { viewer in
+                DispatchQueue.global(qos: .userInitiated).async {
+                    self.page = 0
+
+                    print("Refresh, page = \(self.page)")
+                    sleep(4)
+
+                    viewer.set(data: Array(self.allData[0..<self.len])) {
+                        viewer.stopPullToRefresh()
+                        self.page += 1
+                    }
+                }
+            }.enablePushToRefresh(with: { viewer in
+                DispatchQueue.global(qos: .userInitiated).async {
+                    print("Append, page = \(self.page)")
+                    sleep(4)
+                    let from = self.page * self.len
+                    var to = from + self.len
+                    if from < self.allData.count {
+                        if to > self.allData.count {
+                            to = self.allData.count
+                        }
+                        viewer.append(data: Array(self.allData[from..<to])) {
+                            viewer.stopPushToRefresh()
+                            self.page += 1
+                        }
+                    } else {
+                        print("No more data")
+                        viewer.stopPushToRefresh()
+                    }
+                }
+            }).show(in: self.view, of: self)
     }
 
     override func didReceiveMemoryWarning() {

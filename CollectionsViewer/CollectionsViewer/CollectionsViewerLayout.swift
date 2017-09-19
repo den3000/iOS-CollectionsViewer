@@ -31,37 +31,22 @@ class CollectionsViewerLayoutAttributes: UICollectionViewLayoutAttributes {
 class CollectionsViewerLayout: UICollectionViewLayout {
 
     // 1
-    var configuredCellViewAttributes: ((IndexPath, CGFloat) -> (CollectionsViewerLayoutAttributes))!
-
-    // 2
     var numberOfColumns: ((Void) -> Int)? = nil
     var cellPadding: CGFloat = 6.0
     private var columnsNum = 1
 
-    // 3
+    // 2
     private var cache = [CollectionsViewerLayoutAttributes]()
 
-    // 4
-    private var contentHeight: CGFloat  = 0.0
-    private var contentWidth: CGFloat {
+    // 3
+    public private (set) var contentHeight: CGFloat  = 0.0
+    public var contentWidth: CGFloat {
         let insets = collectionView!.contentInset
         return collectionView!.bounds.width - (insets.left + insets.right)
     }
 
-    func configureCellViewAttributes(_ configuredCellViewAttributes: @escaping ((IndexPath, CGFloat) -> (CollectionsViewerLayoutAttributes))) -> CollectionsViewerLayout {
-        self.configuredCellViewAttributes = configuredCellViewAttributes
-        return self
-    }
-
-    func configureColumnsNum(_ numberOfColumns: @escaping ((Void) -> Int)) -> CollectionsViewerLayout {
-        self.numberOfColumns = numberOfColumns
-        return self
-    }
-
-    func configureCellPadding(_ cellPadding: CGFloat) -> CollectionsViewerLayout {
-        self.cellPadding = cellPadding
-        return self
-    }
+    // 4
+    var configuredCellViewAttributes: ((IndexPath, CGFloat) -> (CollectionsViewerLayoutAttributes))!
 
     override class var layoutAttributesClass : AnyClass {
         return CollectionsViewerLayoutAttributes.self
@@ -107,7 +92,6 @@ class CollectionsViewerLayout: UICollectionViewLayout {
                 // 6
                 contentHeight = max(contentHeight, frame.maxY)
                 yOffset[column] = yOffset[column] + height
-
                 column = column >= (columnsNum - 1) ? 0 : (column+1)
             }
         }
@@ -118,7 +102,6 @@ class CollectionsViewerLayout: UICollectionViewLayout {
     }
 
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
-
         var layoutAttributes = [UICollectionViewLayoutAttributes]()
 
         // Loop through the cache and look for items in the rect
@@ -130,6 +113,10 @@ class CollectionsViewerLayout: UICollectionViewLayout {
         return layoutAttributes
     }
 
+    override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        return cache[indexPath.row]
+    }
+
     override func invalidateLayout() {
         super.invalidateLayout()
         contentHeight = 0.0
@@ -138,5 +125,23 @@ class CollectionsViewerLayout: UICollectionViewLayout {
 
     override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
         return !(collectionView?.bounds.size.equalTo(newBounds.size) ?? false)
+    }
+}
+
+// MARK: Configuration
+extension CollectionsViewerLayout {
+    func configureCellViewAttributes(_ configuredCellViewAttributes: @escaping ((IndexPath, CGFloat) -> (CollectionsViewerLayoutAttributes))) -> CollectionsViewerLayout {
+        self.configuredCellViewAttributes = configuredCellViewAttributes
+        return self
+    }
+
+    func configureColumnsNum(_ numberOfColumns: @escaping ((Void) -> Int)) -> CollectionsViewerLayout {
+        self.numberOfColumns = numberOfColumns
+        return self
+    }
+
+    func configureCellPadding(_ cellPadding: CGFloat) -> CollectionsViewerLayout {
+        self.cellPadding = cellPadding
+        return self
     }
 }
