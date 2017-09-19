@@ -195,7 +195,7 @@ extension CollectionsViewer {
                 let contentOffset = self.collectionView?.contentOffset.y ?? 0
                 let collectionHeight = self.collectionView?.frame.height ?? 0
 
-                if contentOffset + collectionHeight >= contentHeight + self.indicatorInset {
+                if (contentHeight > collectionHeight) && (contentOffset + collectionHeight >= contentHeight + self.indicatorInset) {
                     let contentOffset = CGPoint(x: self.collectionView!.contentOffset.x, y: self.collectionView!.contentOffset.y - self.indicatorInset)
                     self.collectionView?.setContentOffset(contentOffset, animated: true)
                 }
