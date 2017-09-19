@@ -72,6 +72,19 @@ class CollectionsViewer: UICollectionViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+
+        if self.isPushToRefreshEnabled && self.isPushingToRefresh {
+            self.hideProgressIndicator()
+            coordinator.animate(alongsideTransition: nil) { context in
+                if self.isPushToRefreshEnabled && self.isPushingToRefresh {
+                    self.showProgressIndicator()
+                }
+            }
+        }
+    }
 }
 
 // MARK: Mutate Data
@@ -144,17 +157,7 @@ extension CollectionsViewer {
         DispatchQueue.main.async {
             self.isPushingToRefresh = true
 
-            let contentWidth = (self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentWidth ?? 0
-            let contentHeight = (self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentHeight ?? 0
-
-            if self.bottomProgressIndicator == nil {
-                self.bottomProgressIndicator = BottomProgressIndicator(frame: CGRect(
-                        x: 0, y: contentHeight,
-                        width: contentWidth, height: self.indicatorInset))
-            } else {
-                self.bottomProgressIndicator?.frame.origin = CGPoint(x: 0, y: contentHeight)
-            }
-            self.collectionView?.addSubview(self.bottomProgressIndicator!)
+            self.showProgressIndicator()
 
             self.contentInset = self.collectionView!.contentInset;
             self.contentInset?.bottom += self.indicatorInset;
@@ -176,7 +179,7 @@ extension CollectionsViewer {
         DispatchQueue.main.async {
             self.isPushingToRefresh = false
 
-            self.bottomProgressIndicator?.removeFromSuperview()
+            self.hideProgressIndicator()
 
             if self.contentInset != nil {
                 // This happens when content was held up during
@@ -191,9 +194,13 @@ extension CollectionsViewer {
             contentInset.bottom -= self.indicatorInset;
 
             self.setScrollView(contentInset: contentInset, animated: false) { finished in
-                let contentHeight = (self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentHeight ?? 0
-                let contentOffset = self.collectionView?.contentOffset.y ?? 0
-                let collectionHeight = self.collectionView?.frame.height ?? 0
+                // Sometimes for some reason contentHeight values might have too many
+                // numbers after coma, something like '3182.00439372935', and this breaks
+                // condition that defines should we scroll to bottom or not. That's why
+                // it is safer to use here 'round' function for each value
+                let contentHeight = round((self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentHeight ?? 0)
+                let contentOffset = round(self.collectionView?.contentOffset.y ?? 0)
+                let collectionHeight = round(self.collectionView?.frame.height ?? 0)
 
                 if (contentHeight > collectionHeight) && (contentOffset + collectionHeight >= contentHeight + self.indicatorInset) {
                     let contentOffset = CGPoint(x: self.collectionView!.contentOffset.x, y: self.collectionView!.contentOffset.y - self.indicatorInset)
@@ -223,7 +230,7 @@ extension CollectionsViewer {
     }
 
     // In almost all cases we need to schedule scrollView inset
-    // changes until here = inscrollViewWillBeginDecelerating.
+    // changes until here, in scrollViewWillBeginDecelerating.
     // This stuff is necessary to avoid 'content jump _UP_' when
     // scrollView contentInset changed
     override func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView) {
@@ -263,6 +270,24 @@ extension CollectionsViewer {
             UIView.performWithoutAnimation(animation)
             completion(true)
         }
+    }
+
+    fileprivate func showProgressIndicator() {
+        let contentWidth = (self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentWidth ?? 0
+        let contentHeight = (self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentHeight ?? 0
+
+        if self.bottomProgressIndicator == nil { self.bottomProgressIndicator = BottomProgressIndicator() }
+        self.bottomProgressIndicator?.frame = CGRect(
+                x: 0, y: contentHeight,
+                width: contentWidth, height: self.indicatorInset)
+
+        if self.bottomProgressIndicator?.superview == nil {
+            self.collectionView?.addSubview(self.bottomProgressIndicator!)
+        }
+    }
+
+    fileprivate func hideProgressIndicator() {
+        self.bottomProgressIndicator?.removeFromSuperview()
     }
 }
 
