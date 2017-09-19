@@ -120,17 +120,17 @@ class NumberOneExampleCellScreen: UIViewController {
                     self.page = 0
 
                     print("Refresh, page = \(self.page)")
-                    sleep(2)
+                    sleep(4)
 
                     viewer.set(data: Array(self.allData[0..<self.len])) {
-                        viewer.endPullToRefresh()
+                        viewer.stopPullToRefresh()
                         self.page += 1
                     }
                 }
             }.enablePushToRefresh(with: { viewer in
                 DispatchQueue.global(qos: .userInitiated).async {
                     print("Append, page = \(self.page)")
-                    sleep(2)
+                    sleep(4)
                     let from = self.page * self.len
                     var to = from + self.len
                     if from < self.allData.count {
@@ -138,12 +138,12 @@ class NumberOneExampleCellScreen: UIViewController {
                             to = self.allData.count
                         }
                         viewer.append(data: Array(self.allData[from..<to])) {
-                            viewer.endPushToRefresh()
+                            viewer.stopPushToRefresh()
                             self.page += 1
                         }
                     } else {
                         print("No more data")
-                        viewer.endPushToRefresh()
+                        viewer.stopPushToRefresh()
                     }
                 }
             }).show(in: self.view, of: self)

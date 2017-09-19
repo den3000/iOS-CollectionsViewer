@@ -85,7 +85,7 @@ class NumberTwoExampleCellScreen: UIViewController {
                     sleep(2)
 
                     viewer.set(data: Array(self.allItems[0..<self.len])) {
-                        viewer.endPullToRefresh()
+                        viewer.stopPullToRefresh()
                         self.page += 1
                     }
                 }
@@ -100,12 +100,12 @@ class NumberTwoExampleCellScreen: UIViewController {
                                 to = self.allItems.count
                             }
                             viewer.append(data: Array(self.allItems[from..<to])) {
-                                viewer.endPushToRefresh()
+                                viewer.stopPushToRefresh()
                                 self.page += 1
                             }
                         } else {
                             print("No more data")
-                            viewer.endPushToRefresh()
+                            viewer.stopPushToRefresh()
                         }
                     }
                 }).show(in: self.view, of: self)

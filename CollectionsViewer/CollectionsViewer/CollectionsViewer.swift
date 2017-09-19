@@ -130,15 +130,22 @@ extension CollectionsViewer {
         return self
     }
 
-    public func beginPullToRefresh(){
+    public func startPullToRefresh(){
+        if isPushingToRefresh { return }
+
         refreshControl?.beginRefreshing()
     }
 
-    public func endPullToRefresh(){
+    public func stopPullToRefresh(){
         refreshControl?.endRefreshing()
     }
 
     @objc internal func onPullToRefresh(sender:AnyObject) {
+        if isPushingToRefresh {
+            stopPullToRefresh()
+            return
+        }
+
         funcPullToRefreshCallback?(self)
     }
 }
@@ -153,59 +160,63 @@ extension CollectionsViewer {
         return self
     }
 
-    public func beginPushToRefresh(){
-        DispatchQueue.main.async {
-            self.isPushingToRefresh = true
+    public func startPushToRefresh(){
+        if refreshControl?.isRefreshing ?? false { return }
+        if isPushingToRefresh == true { return }
 
-            self.showProgressIndicator()
+        isPushingToRefresh = true
 
-            self.contentInset = self.collectionView!.contentInset;
-            self.contentInset?.bottom += self.indicatorInset;
+        showProgressIndicator()
 
-            // In almost all cases we need to schedule scrollView inset
-            // changes until scrollViewWillBeginDecelerating. But if
-            // scrolling manner itself is very aggressive then we need
-            // to trigger it right now. All this stuff is necessary to
-            // avoid 'content jump _UP_' when scrollView contentInset changed
-            if (self.collectionView?.isDecelerating ?? false) && self.contentInset != nil {
-                self.setScrollView(contentInset: self.contentInset!, animated: false) { finished in
-                }
-                self.contentInset = nil
+        contentInset = collectionView!.contentInset;
+        contentInset?.bottom += indicatorInset;
+
+        // In almost all cases we need to schedule scrollView inset
+        // changes until scrollViewWillBeginDecelerating. But if
+        // scrolling manner itself is very aggressive then we need
+        // to trigger it right now. All this stuff is necessary to
+        // avoid 'content jump _UP_' when scrollView contentInset changed
+        if (collectionView?.isDecelerating ?? false) && contentInset != nil {
+            setScrollView(contentInset: contentInset!, animated: false) { finished in
             }
+            self.contentInset = nil
         }
+
+        funcPushToRefreshCallback?(self)
     }
 
-    public func endPushToRefresh(){
-        DispatchQueue.main.async {
-            self.isPushingToRefresh = false
+    public func stopPushToRefresh(){
+        if refreshControl?.isRefreshing ?? false { return }
+        if isPushingToRefresh == false { return }
 
-            self.hideProgressIndicator()
+        isPushingToRefresh = false
 
-            if self.contentInset != nil {
-                // This happens when content was held up during
-                // all process of showing animation, and this means
-                // contentInset of scrollView was not changed, so we
-                // don't need to change them back
-                self.contentInset = nil
-                return
-            }
+        hideProgressIndicator()
 
-            var contentInset = self.collectionView!.contentInset;
-            contentInset.bottom -= self.indicatorInset;
+        if self.contentInset != nil {
+            // This happens when content was held up during
+            // all process of showing animation, and this means
+            // contentInset of scrollView was not changed, so we
+            // don't need to change them back
+            self.contentInset = nil
+            return
+        }
 
-            self.setScrollView(contentInset: contentInset, animated: false) { finished in
-                // Sometimes for some reason contentHeight values might have too many
-                // numbers after coma, something like '3182.00439372935', and this breaks
-                // condition that defines should we scroll to bottom or not. That's why
-                // it is safer to use here 'round' function for each value
-                let contentHeight = round((self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentHeight ?? 0)
-                let contentOffset = round(self.collectionView?.contentOffset.y ?? 0)
-                let collectionHeight = round(self.collectionView?.frame.height ?? 0)
+        var contentInset = self.collectionView!.contentInset;
+        contentInset.bottom -= self.indicatorInset;
 
-                if (contentHeight > collectionHeight) && (contentOffset + collectionHeight >= contentHeight + self.indicatorInset) {
-                    let contentOffset = CGPoint(x: self.collectionView!.contentOffset.x, y: self.collectionView!.contentOffset.y - self.indicatorInset)
-                    self.collectionView?.setContentOffset(contentOffset, animated: true)
-                }
+        self.setScrollView(contentInset: contentInset, animated: false) { finished in
+            // Sometimes for some reason contentHeight values might have too many
+            // numbers after coma, something like '3182.00439372935', and this breaks
+            // condition that defines should we scroll to bottom or not. That's why
+            // it is safer to use here 'round' function for each value
+            let contentHeight = round((self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentHeight ?? 0)
+            let contentOffset = round(self.collectionView?.contentOffset.y ?? 0)
+            let collectionHeight = round(self.collectionView?.frame.height ?? 0)
+
+            if (contentHeight > collectionHeight) && (contentOffset + collectionHeight >= contentHeight + self.indicatorInset) {
+                let contentOffset = CGPoint(x: self.collectionView!.contentOffset.x, y: self.collectionView!.contentOffset.y - self.indicatorInset)
+                self.collectionView?.setContentOffset(contentOffset, animated: true)
             }
         }
     }
@@ -218,13 +229,11 @@ extension CollectionsViewer {
         let collectionHeight = collectionView?.frame.height ?? 0
         if contentHeight < collectionHeight {
             if contentOffset > pushToRefreshThreshold && isPushToRefreshEnabled && !isPushingToRefresh {
-                beginPushToRefresh()
-                funcPushToRefreshCallback?(self)
+                startPushToRefresh()
             }
         } else {
             if contentOffset + collectionHeight > contentHeight + pushToRefreshThreshold && isPushToRefreshEnabled && !isPushingToRefresh {
-                beginPushToRefresh()
-                funcPushToRefreshCallback?(self)
+                startPushToRefresh()
             }
         }
     }
