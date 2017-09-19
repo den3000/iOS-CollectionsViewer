@@ -12,7 +12,7 @@ import AVFoundation
 class NumberTwoExampleCellScreen: UIViewController {
 
     private var page = 0;
-    private let len = 10
+    private let len = 3
     private let allItems = ExampleTwoItem.allItems();
 
     var collectionsViewer: CollectionsViewer?
@@ -30,7 +30,9 @@ class NumberTwoExampleCellScreen: UIViewController {
             nb.isTranslucent = false
         }
 
-        collectionsViewer = CollectionsViewer.create(for: allItems)
+        page = 1
+        collectionsViewer = CollectionsViewer.create(for: Array(allItems[0..<len]))
+//        collectionsViewer = CollectionsViewer.create(for: allItems)
             .configureCollectionView { collectionView in
                 if let patternImage = UIImage(named: "pattern") {
                     collectionView.backgroundColor = UIColor(patternImage: patternImage)
@@ -82,11 +84,31 @@ class NumberTwoExampleCellScreen: UIViewController {
                     print("Refresh, page = \(self.page)")
                     sleep(2)
 
-                    viewer.set(data: Array(self.allItems[0..<10])) {
+                    viewer.set(data: Array(self.allItems[0..<self.len])) {
                         viewer.endPullToRefresh()
+                        self.page += 1
                     }
                 }
-            }.show(in: self.view, of: self)
+            }.enablePushToRefresh(with: { viewer in
+                    DispatchQueue.global(qos: .userInitiated).async {
+                        print("Append, page = \(self.page)")
+                        sleep(2)
+                        let from = self.page * self.len
+                        var to = from + self.len
+                        if from < self.allItems.count {
+                            if to > self.allItems.count {
+                                to = self.allItems.count
+                            }
+                            viewer.append(data: Array(self.allItems[from..<to])) {
+                                viewer.endPushToRefresh()
+                                self.page += 1
+                            }
+                        } else {
+                            print("No more data")
+                            viewer.endPushToRefresh()
+                        }
+                    }
+                }).show(in: self.view, of: self)
 
         collectionsViewer?.view.backgroundColor = UIColor.green
     }

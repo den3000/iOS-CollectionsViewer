@@ -10,8 +10,8 @@ import UIKit
 
 class NumberOneExampleCellScreen: UIViewController {
 
-    private var page = 0;
-    private let len = 10
+    private var page = 0
+    private let len = 7
     private let allData = [
         "01 text",
         "02 text text",
@@ -61,7 +61,8 @@ class NumberOneExampleCellScreen: UIViewController {
             nb.isTranslucent = false
         }
 
-        collectionsViewer = CollectionsViewer.create(for: allData)
+        page = 1
+        collectionsViewer = CollectionsViewer.create(for: Array(allData[0..<len]))
             .configureCollectionView { collectionView in
                 collectionView.backgroundColor = UIColor.white
             }
@@ -103,11 +104,31 @@ class NumberOneExampleCellScreen: UIViewController {
                     print("Refresh, page = \(self.page)")
                     sleep(2)
 
-                    viewer.set(data: Array(self.allData[0..<10])) {
+                    viewer.set(data: Array(self.allData[0..<self.len])) {
                         viewer.endPullToRefresh()
+                        self.page += 1
                     }
                 }
-            }.show(in: self.view, of: self)
+            }.enablePushToRefresh(with: { viewer in
+                DispatchQueue.global(qos: .userInitiated).async {
+                    print("Append, page = \(self.page)")
+                    sleep(2)
+                    let from = self.page * self.len
+                    var to = from + self.len
+                    if from < self.allData.count {
+                        if to > self.allData.count {
+                            to = self.allData.count
+                        }
+                        viewer.append(data: Array(self.allData[from..<to])) {
+                            viewer.endPushToRefresh()
+                            self.page += 1
+                        }
+                    } else {
+                        print("No more data")
+                        viewer.endPushToRefresh()
+                    }
+                }
+            }).show(in: self.view, of: self)
     }
 
     override func didReceiveMemoryWarning() {

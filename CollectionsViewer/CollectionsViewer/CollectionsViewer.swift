@@ -178,6 +178,15 @@ extension CollectionsViewer {
 
             self.bottomProgressIndicator?.removeFromSuperview()
 
+            if self.contentInset != nil {
+                // This happens when content was held up during
+                // all process of showing animation, and this means
+                // contentInset of scrollView was not changed, so we
+                // don't need to change them back
+                self.contentInset = nil
+                return
+            }
+
             var contentInset = self.collectionView!.contentInset;
             contentInset.bottom -= self.indicatorInset;
 
