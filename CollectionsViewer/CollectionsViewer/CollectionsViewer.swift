@@ -182,7 +182,12 @@ extension CollectionsViewer {
             self.contentInset = nil
         }
 
-        funcPushToRefreshCallback?(self)
+        // It might looks like logically to call 'funcPushToRefreshCallback'
+        // right here, but it is not. In some cases, when time interval between
+        // 'startPushToRefresh' and 'stopPushToRefresh' is too short it could
+        // cause undesirable content overscrolling and other UI glitches. That's
+        // why 'funcPushToRefreshCallback' should be called in 'scrollViewDidEndDecelerating'
+//        funcPushToRefreshCallback?(self)
     }
 
     public func stopPushToRefresh(){
@@ -247,6 +252,18 @@ extension CollectionsViewer {
             self.setScrollView(contentInset: contentInset, animated: false) { finished in
                 self.contentInset = nil
             }
+        }
+    }
+
+    // It might looks like logically to call 'funcPushToRefreshCallback'
+    // right at the end of 'startPushToRefresh', but it is not. In some
+    // cases, when time interval between 'startPushToRefresh' and
+    // 'stopPushToRefresh' is too short it could cause undesirable content
+    // overscrolling and other UI glitches. That's why 'funcPushToRefreshCallback'
+    // should be called in here
+    override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        if isPushingToRefresh {
+            funcPushToRefreshCallback?(self)
         }
     }
 
