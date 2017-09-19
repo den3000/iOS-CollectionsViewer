@@ -8,46 +8,6 @@
 
 import UIKit
 
-//extension UICollectionView {
-//    var firstCompletelyVisibleCell : IndexPath? {
-//        let visibleRect = CGRect(origin: contentOffset, size: bounds.size)
-//        let visiblePoint = CGPoint(x: visibleRect.midX, y: visibleRect.minY)
-//
-//        if let ip = indexPathForItem(at: visiblePoint) {
-//            return ip
-//        } else {
-//            // TODO properly handle this in case of multiple sections or grid
-//            let sectionsNum = numberOfSections;
-//            let itemsNum = numberOfItems(inSection: sectionsNum - 1)
-//
-//            if itemsNum == 0 {
-//                return nil
-//            } else {
-//                return IndexPath(row: 0, section: 0)
-//            }
-//        }
-//    }
-//
-//    var lastCompletelyVisibleCell : IndexPath? {
-//        let visibleRect = CGRect(origin: contentOffset, size: bounds.size)
-//        let visiblePoint = CGPoint(x: visibleRect.midX, y: visibleRect.maxY)
-//
-//        if let ip = indexPathForItem(at: visiblePoint) {
-//            return ip
-//        } else {
-//            // TODO properly handle this in case of multiple sections or grid
-//            let sectionsNum = numberOfSections;
-//            let itemsNum = numberOfItems(inSection: sectionsNum - 1)
-//
-//            if itemsNum == 0 {
-//                return nil
-//            } else {
-//                return IndexPath(row: itemsNum-1, section: sectionsNum-1)
-//            }
-//        }
-//    }
-//}
-
 class CollectionsViewer: UICollectionViewController {
 
     public internal(set) var data: [Any]?
@@ -61,10 +21,13 @@ class CollectionsViewer: UICollectionViewController {
     internal var refreshControl: UIRefreshControl?
     internal var funcPullToRefreshCallback: ((CollectionsViewer) -> ())?
 
-    public var pushToRefreshThreshold = 3
+    internal var pushToRefreshThreshold: CGFloat = 100
     internal var isPushToRefreshEnabled = false;
     internal var isPushingToRefresh = false;
     internal var funcPushToRefreshCallback: ((CollectionsViewer) -> ())?
+    internal var bottomProgressIndicator: BottomProgressIndicator?
+    internal var indicatorInset: CGFloat = 50.0
+    internal var contentInset: UIEdgeInsets?
 
     static public func create(for data: [Any]) -> CollectionsViewer {
         let layout = CollectionsViewerLayout()
@@ -178,16 +141,56 @@ extension CollectionsViewer {
     }
 
     public func beginPushToRefresh(){
-//        print("beginPushToRefresh")
         DispatchQueue.main.async {
             self.isPushingToRefresh = true
+
+            let contentWidth = (self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentWidth ?? 0
+            let contentHeight = (self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentHeight ?? 0
+
+            if self.bottomProgressIndicator == nil {
+                self.bottomProgressIndicator = BottomProgressIndicator(frame: CGRect(
+                        x: 0, y: contentHeight,
+                        width: contentWidth, height: self.indicatorInset))
+            } else {
+                self.bottomProgressIndicator?.frame.origin = CGPoint(x: 0, y: contentHeight)
+            }
+            self.collectionView?.addSubview(self.bottomProgressIndicator!)
+
+            self.contentInset = self.collectionView!.contentInset;
+            self.contentInset?.bottom += self.indicatorInset;
+
+            // In almost all cases we need to schedule scrollView inset
+            // changes until scrollViewWillBeginDecelerating. But if
+            // scrolling manner itself is very aggressive then we need
+            // to trigger it right now. All this stuff is necessary to
+            // avoid 'content jump _UP_' when scrollView contentInset changed
+            if (self.collectionView?.isDecelerating ?? false) && self.contentInset != nil {
+                self.setScrollView(contentInset: self.contentInset!, animated: false) { finished in
+                }
+                self.contentInset = nil
+            }
         }
     }
 
     public func endPushToRefresh(){
-//        print("endPushToRefresh")
         DispatchQueue.main.async {
             self.isPushingToRefresh = false
+
+            self.bottomProgressIndicator?.removeFromSuperview()
+
+            var contentInset = self.collectionView!.contentInset;
+            contentInset.bottom -= self.indicatorInset;
+
+            self.setScrollView(contentInset: contentInset, animated: false) { finished in
+                let contentHeight = (self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentHeight ?? 0
+                let contentOffset = self.collectionView?.contentOffset.y ?? 0
+                let collectionHeight = self.collectionView?.frame.height ?? 0
+
+                if contentOffset + collectionHeight >= contentHeight + self.indicatorInset {
+                    let contentOffset = CGPoint(x: self.collectionView!.contentOffset.x, y: self.collectionView!.contentOffset.y - self.indicatorInset)
+                    self.collectionView?.setContentOffset(contentOffset, animated: true)
+                }
+            }
         }
     }
 
@@ -197,28 +200,60 @@ extension CollectionsViewer {
         let contentHeight = (self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentHeight ?? 0
         let contentOffset = self.collectionView?.contentOffset.y ?? 0
         let collectionHeight = collectionView?.frame.height ?? 0
-//        print("coy = \(contentOffset) con_h = \(contentHeight) col_h = \(collectionHeight)")
-
         if contentHeight < collectionHeight {
-            if contentOffset > 50 && isPushToRefreshEnabled && !isPushingToRefresh {
+            if contentOffset > pushToRefreshThreshold && isPushToRefreshEnabled && !isPushingToRefresh {
                 beginPushToRefresh()
+                funcPushToRefreshCallback?(self)
             }
         } else {
-            if contentOffset + collectionHeight > contentHeight + 50 && isPushToRefreshEnabled && !isPushingToRefresh {
+            if contentOffset + collectionHeight > contentHeight + pushToRefreshThreshold && isPushToRefreshEnabled && !isPushingToRefresh {
                 beginPushToRefresh()
+                funcPushToRefreshCallback?(self)
             }
         }
     }
 
-    override func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        if isPushingToRefresh {
-            onPushToRefresh()
+    // In almost all cases we need to schedule scrollView inset
+    // changes until here = inscrollViewWillBeginDecelerating.
+    // This stuff is necessary to avoid 'content jump _UP_' when
+    // scrollView contentInset changed
+    override func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView) {
+        if let contentInset = self.contentInset {
+            self.setScrollView(contentInset: contentInset, animated: false) { finished in
+                self.contentInset = nil
+            }
         }
     }
 
-    @objc internal func onPushToRefresh() {
-//        print("onPushToRefresh")
-        funcPushToRefreshCallback?(self)
+    func setScrollView(contentInset: UIEdgeInsets, animated: Bool, completion: @escaping ((Bool) -> Void)) {
+        let animation: () -> () = {
+            // This stuff is necessary to avoid 'content jump _DOWN_'
+            // when scrollView contentInset changed
+            // Step 1 - saving contentOffset before contentInset changed
+            let contentOffset = self.collectionView?.contentOffset
+
+            self.collectionView?.contentInset = contentInset
+
+            if let contentOffset = contentOffset {
+                // This condition is necessary to prevent undesirable reduction of
+                // total content height in case when scrollView is scroll back to top
+                if contentOffset.y > 0 {
+                    // Step 2 - restoring contentOffset after contentInset changed
+                    self.collectionView?.contentOffset = contentOffset
+                }
+            }
+        }
+
+        if animated {
+            UIView.animate(withDuration: 0.2,
+                    delay: 0.0,
+                    options: [.allowUserInteraction, .beginFromCurrentState],
+                    animations: animation,
+                    completion: completion)
+        } else {
+            UIView.performWithoutAnimation(animation)
+            completion(true)
+        }
     }
 }
 
@@ -346,11 +381,10 @@ class BottomProgressIndicator: UICollectionViewCell {
     }
 
     func setup() {
-        translatesAutoresizingMaskIntoConstraints = false
-
         indicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
-        indicator?.startAnimating()
+        indicator?.center = CGPoint(x: frame.width/2, y: frame.height/2)
         indicator?.translatesAutoresizingMaskIntoConstraints = false
+        indicator?.startAnimating()
 
         addSubview(indicator!)
 

@@ -40,7 +40,7 @@ class CollectionsViewerLayout: UICollectionViewLayout {
 
     // 3
     public private (set) var contentHeight: CGFloat  = 0.0
-    private var contentWidth: CGFloat {
+    public var contentWidth: CGFloat {
         let insets = collectionView!.contentInset
         return collectionView!.bounds.width - (insets.left + insets.right)
     }
