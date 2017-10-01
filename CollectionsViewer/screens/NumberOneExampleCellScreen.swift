@@ -87,66 +87,59 @@ class NumberOneExampleCellScreen: UIViewController {
             .cell(nibNameAndIdentifier: NumberOneExampleCell.NIB_NAME)
             .cell(padding: 6)
             .cell(configuration: { cell, indexPath, viewer in
-                let text: String = viewer.data?[indexPath.row] as? String ?? ""
                 let cell = cell as! NumberOneExampleCell
-                cell.backgroundColor = UIColor.gray
-                cell.text = text
+                cell.text = viewer.data?[indexPath.row] as? String
                 return cell
             }).cell(selected: { indexPath, viewer in
                 let text: String = viewer.data?[indexPath.row] as? String ?? ""
                 CellDetailsScreen.show(in: self).text = text
-            }).cell(viewAttributes: { indexPath, width in
-                let text: String = self.collectionsViewer?.data?[indexPath.row] as? String ?? ""
-                var totalHeight: CGFloat = 0
-
-                let font = UIFont.systemFont(ofSize: 17.0)
-                let textHeight = UICollectionViewCell.heightFor(text, with: font, and: width)
-                totalHeight += textHeight
-
-                let attrs = CollectionsViewerLayoutAttributes(forCellWith: indexPath)
-                attrs.frame = CGRect(x: 0, y: 0, width: width, height: totalHeight)
-                attrs.dimensions = [
-                    NumberOneExampleCell.TEXTVIEWHEIGHT : textHeight
-                ]
-                return attrs
+            }).cell(viewAttributes: {
+                let text = self.collectionsViewer?.data?[$0.row] as? String
+                return NumberOneExampleCell.attrsFrom(indexPath: $0, width: $1, text: text)
             }).columnsNum {
                 if UIDevice.current.orientation == .portrait {
                     return UIDevice.current.userInterfaceIdiom == .pad ? 2 : 1
                 } else {
                     return UIDevice.current.userInterfaceIdiom == .pad ? 4 : 2
                 }
-            }.enablePullToRefresh { viewer in
-                DispatchQueue.global(qos: .userInitiated).async {
-                    self.page = 0
+            }.enablePullToRefresh { _ in self.onRefresh() }
+            .enablePushToRefresh { _ in self.onNeedMore() }
+            .show(in: self.view, of: self)
+    }
 
-                    print("Refresh, page = \(self.page)")
-                    sleep(4)
+    private func onRefresh() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.page = 0
 
-                    viewer.set(data: Array(self.allData[0..<self.len])) {
-                        viewer.stopPullToRefresh()
-                        self.page += 1
-                    }
+            print("Refresh, page = \(self.page)")
+            sleep(4)
+
+            self.collectionsViewer?.set(data: Array(self.allData[0..<self.len])) {
+                self.collectionsViewer?.stopPullToRefresh()
+                self.page += 1
+            }
+        }
+    }
+
+    private func onNeedMore() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            print("Append, page = \(self.page)")
+            sleep(4)
+            let from = self.page * self.len
+            var to = from + self.len
+            if from < self.allData.count {
+                if to > self.allData.count {
+                    to = self.allData.count
                 }
-            }.enablePushToRefresh(with: { viewer in
-                DispatchQueue.global(qos: .userInitiated).async {
-                    print("Append, page = \(self.page)")
-                    sleep(4)
-                    let from = self.page * self.len
-                    var to = from + self.len
-                    if from < self.allData.count {
-                        if to > self.allData.count {
-                            to = self.allData.count
-                        }
-                        viewer.append(data: Array(self.allData[from..<to])) {
-                            viewer.stopPushToRefresh()
-                            self.page += 1
-                        }
-                    } else {
-                        print("No more data")
-                        viewer.stopPushToRefresh()
-                    }
+                self.collectionsViewer?.append(data: Array(self.allData[from..<to])) {
+                    self.collectionsViewer?.stopPushToRefresh()
+                    self.page += 1
                 }
-            }).show(in: self.view, of: self)
+            } else {
+                print("No more data")
+                self.collectionsViewer?.stopPushToRefresh()
+            }
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -169,6 +162,38 @@ class NumberOneExampleCell: UICollectionViewCell {
                 textLabel?.text = text
             }
         }
+    }
+
+    public static func attrsFrom(indexPath: IndexPath, width: CGFloat, text: String?) -> CollectionsViewerLayoutAttributes {
+        let text = text ?? ""
+
+        let font = UIFont.systemFont(ofSize: 17.0)
+        let textHeight = UICollectionViewCell.heightFor(text, with: font, and: width)
+        var totalHeight = textHeight
+
+        let attrs = CollectionsViewerLayoutAttributes(forCellWith: indexPath)
+        attrs.frame = CGRect(x: 0, y: 0, width: width, height: totalHeight)
+        attrs.dimensions = [
+            NumberOneExampleCell.TEXTVIEWHEIGHT : textHeight
+        ]
+        return attrs
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.setup()
+    }
+
+    required init(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)!
+        self.setup()
+    }
+
+    func setup() {
+
+        backgroundColor = UIColor.gray
+
+//        setNeedsLayout()
     }
 
     override func apply(_ layoutAttributes: UICollectionViewLayoutAttributes) {
