@@ -232,12 +232,18 @@ extension CollectionsViewer {
         let contentHeight = (self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentHeight ?? 0
         let contentOffset = self.collectionView?.contentOffset.y ?? 0
         let collectionHeight = collectionView?.frame.height ?? 0
-        if contentHeight < collectionHeight {
-            if contentOffset > pushToRefreshThreshold && isPushToRefreshEnabled && !isPushingToRefresh {
+        if (contentHeight + pushToRefreshThreshold) <= collectionHeight {
+            // This old code could used for switching back to
+            // post-scroll triggering in case of reversed ordering
+            // if contentOffset > pushToRefreshThreshold && isPushToRefreshEnabled && !isPushingToRefresh {
+            if contentOffset > 0.3 * pushToRefreshThreshold && isPushToRefreshEnabled && !isPushingToRefresh {
                 startPushToRefresh()
             }
         } else {
-            if contentOffset + collectionHeight > contentHeight + pushToRefreshThreshold && isPushToRefreshEnabled && !isPushingToRefresh {
+            // This old code could used for switching back to
+            // post-scroll triggering in case of reversed ordering
+            //  if contentOffset + collectionHeight > contentHeight + pushToRefreshThreshold && isPushToRefreshEnabled && !isPushingToRefresh {
+            if contentOffset + collectionHeight + pushToRefreshThreshold >= contentHeight && isPushToRefreshEnabled && !isPushingToRefresh {
                 startPushToRefresh()
             }
         }
