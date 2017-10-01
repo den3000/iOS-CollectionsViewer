@@ -103,7 +103,7 @@ class NumberOneExampleCellScreen: UIViewController {
                     return UIDevice.current.userInterfaceIdiom == .pad ? 4 : 2
                 }
             }.enablePullToRefresh { _ in self.onRefresh() }
-            .enablePushToRefresh{ _ in self.onNeedMore() }
+            .enablePushToRefresh { _ in self.onNeedMore() }
             .show(in: self.view, of: self)
     }
 
@@ -166,11 +166,10 @@ class NumberOneExampleCell: UICollectionViewCell {
 
     public static func attrsFrom(indexPath: IndexPath, width: CGFloat, text: String?) -> CollectionsViewerLayoutAttributes {
         let text = text ?? ""
-        var totalHeight: CGFloat = 0
 
         let font = UIFont.systemFont(ofSize: 17.0)
         let textHeight = UICollectionViewCell.heightFor(text, with: font, and: width)
-        totalHeight += textHeight
+        var totalHeight = textHeight
 
         let attrs = CollectionsViewerLayoutAttributes(forCellWith: indexPath)
         attrs.frame = CGRect(x: 0, y: 0, width: width, height: totalHeight)
