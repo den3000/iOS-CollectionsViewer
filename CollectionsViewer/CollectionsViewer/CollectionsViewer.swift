@@ -28,6 +28,7 @@ class CollectionsViewer: UICollectionViewController {
     internal var bottomProgressIndicator: BottomProgressIndicator?
     internal var indicatorInset: CGFloat = 50.0
     internal var contentInset: UIEdgeInsets?
+    internal var oldContentOffset : CGFloat = 0
 
     static public func create(for data: [Any]) -> CollectionsViewer {
         let layout = CollectionsViewerLayout()
@@ -232,18 +233,21 @@ extension CollectionsViewer {
         let contentHeight = (self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentHeight ?? 0
         let contentOffset = self.collectionView?.contentOffset.y ?? 0
         let collectionHeight = collectionView?.frame.height ?? 0
+
+        let isCorrectDirection = contentOffset - oldContentOffset > 0
+
         if (contentHeight + pushToRefreshThreshold) <= collectionHeight {
             // This old code could used for switching back to
             // post-scroll triggering in case of reversed ordering
             // if contentOffset > pushToRefreshThreshold && isPushToRefreshEnabled && !isPushingToRefresh {
-            if contentOffset > 0.3 * pushToRefreshThreshold && isPushToRefreshEnabled && !isPushingToRefresh {
+            if isCorrectDirection && contentOffset > 0.3 * pushToRefreshThreshold && isPushToRefreshEnabled && !isPushingToRefresh {
                 startPushToRefresh()
             }
         } else {
             // This old code could used for switching back to
             // post-scroll triggering in case of reversed ordering
             //  if contentOffset + collectionHeight > contentHeight + pushToRefreshThreshold && isPushToRefreshEnabled && !isPushingToRefresh {
-            if contentOffset + collectionHeight + pushToRefreshThreshold >= contentHeight && isPushToRefreshEnabled && !isPushingToRefresh {
+            if isCorrectDirection && contentOffset + collectionHeight + pushToRefreshThreshold >= contentHeight && isPushToRefreshEnabled && !isPushingToRefresh {
                 startPushToRefresh()
             }
         }
