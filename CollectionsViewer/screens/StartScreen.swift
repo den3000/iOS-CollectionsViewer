@@ -10,6 +10,8 @@ import UIKit
 
 class StartScreen: UIViewController {
 
+    @IBOutlet var swReverseLists: UISwitch?
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -27,10 +29,10 @@ class StartScreen: UIViewController {
     }
 
     @IBAction func onNumberOneExampleCellPressed(sender: UIButton) {
-        NumberOneExampleCellScreen.show(in: self)
+        NumberOneExampleCellScreen.show(in: self, reverse: swReverseLists?.isOn ?? false)
     }
 
     @IBAction func onNumberTwoExampleCellPressed(sender: UIButton) {
-        NumberTwoExampleCellScreen.show(in: self)
+        NumberTwoExampleCellScreen.show(in: self, reverse: swReverseLists?.isOn ?? false)
     }
 }

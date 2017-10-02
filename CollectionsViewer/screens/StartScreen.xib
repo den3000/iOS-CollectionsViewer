@@ -10,6 +10,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="StartScreen" customModule="CollectionsViewer" customModuleProvider="target">
             <connections>
+                <outlet property="swReverseLists" destination="v6O-QA-RB0" id="ZAG-bk-KEc"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
             </connections>
         </placeholder>
@@ -38,14 +39,27 @@
                         <action selector="onNumberTwoExampleCellPressedWithSender:" destination="-1" eventType="touchUpInside" id="i7i-jf-9mz"/>
                     </connections>
                 </button>
+                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="v6O-QA-RB0">
+                    <rect key="frame" x="227" y="96" width="51" height="31"/>
+                </switch>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Reverse lists" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ymj-2g-ndS">
+                    <rect key="frame" x="99" y="101" width="96" height="21"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
             </subviews>
             <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
             <constraints>
                 <constraint firstAttribute="trailing" secondItem="cpM-gh-cGR" secondAttribute="trailing" constant="16" id="6Lr-UG-BDc"/>
+                <constraint firstItem="ymj-2g-ndS" firstAttribute="centerY" secondItem="v6O-QA-RB0" secondAttribute="centerY" id="GV5-H7-9Uc"/>
                 <constraint firstItem="w06-6g-tIl" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" constant="20" id="K5q-MB-lEP"/>
                 <constraint firstItem="cpM-gh-cGR" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" constant="16" id="MVf-tD-1gA"/>
+                <constraint firstItem="v6O-QA-RB0" firstAttribute="centerX" secondItem="i5M-Pr-FkT" secondAttribute="centerX" constant="64" id="N3N-i0-xRT"/>
+                <constraint firstItem="ymj-2g-ndS" firstAttribute="top" secondItem="cpM-gh-cGR" secondAttribute="bottom" constant="13" id="VR6-rX-cos"/>
                 <constraint firstAttribute="trailing" secondItem="w06-6g-tIl" secondAttribute="trailing" constant="16" id="Xk4-Ng-2Tg"/>
                 <constraint firstItem="cpM-gh-cGR" firstAttribute="top" secondItem="w06-6g-tIl" secondAttribute="bottom" constant="8" id="bAU-li-PD3"/>
+                <constraint firstItem="ymj-2g-ndS" firstAttribute="centerX" secondItem="i5M-Pr-FkT" secondAttribute="centerX" constant="-40.5" id="hoa-Qi-odS"/>
                 <constraint firstItem="w06-6g-tIl" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" constant="16" id="shm-xw-C8L"/>
             </constraints>
             <point key="canvasLocation" x="25.5" y="52.5"/>

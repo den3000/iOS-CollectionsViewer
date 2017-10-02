@@ -11,14 +11,17 @@ import AVFoundation
 
 class NumberTwoExampleCellScreen: UIViewController {
 
+    public internal(set) var isReversed = false
     private var page = 0;
     private let len = 3
     private let allItems = ExampleTwoItem.allItems();
 
     var collectionsViewer: CollectionsViewer?
 
-    static func show(in viewController: UIViewController?) {
-        viewController?.navigationController?.pushViewController(NumberTwoExampleCellScreen(nibName: nil, bundle: nil), animated: true)
+    static func show(in viewController: UIViewController?, reverse: Bool) {
+        let vc = NumberTwoExampleCellScreen(nibName: nil, bundle: nil)
+        vc.isReversed = reverse
+        viewController?.navigationController?.pushViewController(vc, animated: true)
     }
 
     override func viewDidLoad() {

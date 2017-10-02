@@ -10,6 +10,7 @@ import UIKit
 
 class NumberOneExampleCellScreen: UIViewController {
 
+    public internal(set) var isReversed = false
     private var page = 0
     private let len = 7
     private let allData = [
@@ -65,8 +66,10 @@ class NumberOneExampleCellScreen: UIViewController {
     
     var collectionsViewer: CollectionsViewer?
 
-    static func show(in viewController: UIViewController?) {
-        viewController?.navigationController?.pushViewController(NumberOneExampleCellScreen(nibName: nil, bundle: nil), animated: true)
+    static func show(in viewController: UIViewController?, reverse: Bool) {
+        let vc = NumberOneExampleCellScreen(nibName: nil, bundle: nil)
+        vc.isReversed = reverse
+        viewController?.navigationController?.pushViewController(vc, animated: true)
     }
 
     override func viewDidLoad() {
