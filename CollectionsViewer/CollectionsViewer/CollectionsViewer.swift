@@ -223,10 +223,7 @@ extension CollectionsViewer {
 
         var contentInset = self.collectionView!.contentInset;
         if isReversed {
-            let collectionHeight = round(self.collectionView?.frame.height ?? 0)
-            let contentHeight = (self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentHeight ?? 0
             contentInset.bottom = 0
-//            contentInset.bottom -= collectionHeight + contentHeight - indicatorInset
         } else {
             contentInset.bottom -= indicatorInset;
         }
@@ -241,9 +238,13 @@ extension CollectionsViewer {
             let collectionHeight = round(self.collectionView?.frame.height ?? 0)
 
             if self.isReversed {
-                // TODO: ???
-                let contentOffset = CGPoint(x: self.collectionView!.contentOffset.x, y: 0)
-                self.collectionView?.setContentOffset(contentOffset, animated: true)
+                if contentHeight < collectionHeight {
+                    let contentOffset = CGPoint(x: self.collectionView!.contentOffset.x, y: 0)
+                    self.collectionView?.setContentOffset(contentOffset, animated: true)
+                } else {
+                    let contentOffset = CGPoint(x: self.collectionView!.contentOffset.x, y: contentHeight - collectionHeight)
+                    self.collectionView?.setContentOffset(contentOffset, animated: true)
+                }
             } else {
                 if (contentHeight > collectionHeight) && (contentOffset + collectionHeight >= contentHeight + self.indicatorInset) {
                     let contentOffset = CGPoint(x: self.collectionView!.contentOffset.x, y: self.collectionView!.contentOffset.y - self.indicatorInset)
@@ -260,16 +261,20 @@ extension CollectionsViewer {
         let contentOffset = self.collectionView?.contentOffset.y ?? 0
         let collectionHeight = collectionView?.frame.height ?? 0
 
+//        print("ch = \(contentHeight) co = \(contentOffset) h = \(collectionHeight)")
+
         let isScrollingToBtm = contentOffset - oldContentOffset > 0
         oldContentOffset = contentOffset
 
         if isReversed {
-            if (contentHeight + pushToRefreshThreshold) <= collectionHeight {
-                if isScrollingToBtm && (contentOffset > pushToRefreshThreshold) && isPushToRefreshEnabled && !isPushingToRefresh {
+            if contentHeight < collectionHeight {
+                if isPushToRefreshEnabled && !isPushingToRefresh && isScrollingToBtm && (contentOffset > 0) &&
+                           (contentOffset > pushToRefreshThreshold)  {
                     startPushToRefresh()
                 }
             } else {
-                if isScrollingToBtm && (contentOffset + collectionHeight > contentHeight + pushToRefreshThreshold) && isPushToRefreshEnabled && !isPushingToRefresh {
+                if isPushToRefreshEnabled && !isPushingToRefresh ?? isScrollingToBtm &&
+                           (contentOffset > contentHeight - collectionHeight + pushToRefreshThreshold ) {
                     startPushToRefresh()
                 }
             }
