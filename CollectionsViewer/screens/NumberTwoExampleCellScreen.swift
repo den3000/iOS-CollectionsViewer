@@ -11,14 +11,17 @@ import AVFoundation
 
 class NumberTwoExampleCellScreen: UIViewController {
 
+    public internal(set) var isReversed = false
     private var page = 0;
     private let len = 3
     private let allItems = ExampleTwoItem.allItems();
 
     var collectionsViewer: CollectionsViewer?
 
-    static func show(in viewController: UIViewController?) {
-        viewController?.navigationController?.pushViewController(NumberTwoExampleCellScreen(nibName: nil, bundle: nil), animated: true)
+    static func show(in viewController: UIViewController?, reverse: Bool) {
+        let vc = NumberTwoExampleCellScreen(nibName: nil, bundle: nil)
+        vc.isReversed = reverse
+        viewController?.navigationController?.pushViewController(vc, animated: true)
     }
 
     override func viewDidLoad() {
@@ -31,8 +34,7 @@ class NumberTwoExampleCellScreen: UIViewController {
         }
 
         page = 1
-        collectionsViewer = CollectionsViewer.create(for: Array(allItems[0..<len]))
-//        collectionsViewer = CollectionsViewer.create(for: allItems)
+        collectionsViewer = CollectionsViewer.create(for: Array(allItems[0..<len]), reverse: isReversed)
             .configureCollectionView { collectionView in
                 if let patternImage = UIImage(named: "pattern") {
                     collectionView.backgroundColor = UIColor(patternImage: patternImage)
@@ -42,75 +44,62 @@ class NumberTwoExampleCellScreen: UIViewController {
             .cell(padding: 6)
             .cell(configuration: { cell, indexPath, viewer in
                 let cell = cell as! NumberTwoExampleCell
-                cell.backgroundColor = UIColor.white
-                cell.layer.cornerRadius = 4
-                cell.layer.masksToBounds = true
                 cell.exampleTwoItem = viewer.data?[indexPath.row] as? ExampleTwoItem
                 return cell
             }).cell(selected: { indexPath, viewer in
                 let text: String = (viewer.data?[indexPath.row] as? ExampleTwoItem)?.text ?? ""
                 CellDetailsScreen.show(in: self).text = text
-            }).cell(viewAttributes: { indexPath, width in
-                let exampleTwoItem = self.collectionsViewer?.data?[indexPath.row] as! ExampleTwoItem
-
-                let imageRect = UICollectionViewCell.rectFor(exampleTwoItem.image, with: width, and: CGFloat.greatestFiniteMagnitude)
-                var totalHeight = imageRect.height
-
-                var font = UIFont.systemFont(ofSize: 17.0)
-                let titleHeight = UICollectionViewCell.heightFor(exampleTwoItem.title , with: font, and: width)
-                totalHeight += titleHeight
-
-                font = UIFont.systemFont(ofSize: 15.0)
-                let textHeight = UICollectionViewCell.heightFor(exampleTwoItem.text , with: font, and: width)
-                totalHeight += textHeight
-
-                let attrs = CollectionsViewerLayoutAttributes(forCellWith: indexPath)
-                attrs.frame = CGRect(x: 0, y: 0, width: width, height: totalHeight)
-                attrs.dimensions = [
-                    NumberTwoExampleCell.IMAGEVIEWHEIGHT : imageRect.height,
-                    NumberTwoExampleCell.TEXTVIEWHEIGHT : textHeight,
-                ]
-                return attrs
+            }).cell(viewAttributes: {
+                let exampleTwoItem = self.collectionsViewer?.data?[$0.row] as! ExampleTwoItem
+                return NumberTwoExampleCell.attrsFrom(indexPath: $0, width: $1, exampleTwoItem: exampleTwoItem)
             }).columnsNum {
                 if UIDevice.current.orientation == .portrait {
                     return UIDevice.current.userInterfaceIdiom == .pad ? 2 : 1
                 } else {
                     return UIDevice.current.userInterfaceIdiom == .pad ? 4 : 2
                 }
-            }.enablePullToRefresh { viewer in
-                DispatchQueue.global(qos: .userInitiated).async {
-                    self.page = 0
+            }.enablePullToRefresh { _ in self.isReversed ? self.onNeedMore() : self.onRefresh() }
+            .enablePushToRefresh { _ in self.isReversed ? self.onRefresh() : self.onNeedMore() }
+            .show(in: self.view, of: self)
+    }
 
-                    print("Refresh, page = \(self.page)")
-                    sleep(2)
+    private func onRefresh() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.page = 0
 
-                    viewer.set(data: Array(self.allItems[0..<self.len])) {
-                        viewer.stopPullToRefresh()
-                        self.page += 1
-                    }
+            print("Refresh, page = \(self.page)")
+            sleep(3)
+
+            self.collectionsViewer?.set(data: Array(self.allItems[0..<self.len])) {
+                if !self.isReversed {self.collectionsViewer?.stopPullToRefresh()}
+                else {self.collectionsViewer?.stopPushToRefresh()}
+                self.page += 1
+            }
+        }
+    }
+
+    private func onNeedMore() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            print("Append, page = \(self.page)")
+            sleep(3)
+
+            let from = self.page * self.len
+            var to = from + self.len
+            if from < self.allItems.count {
+                if to > self.allItems.count {
+                    to = self.allItems.count
                 }
-            }.enablePushToRefresh(with: { viewer in
-                    DispatchQueue.global(qos: .userInitiated).async {
-                        print("Append, page = \(self.page)")
-                        sleep(2)
-                        let from = self.page * self.len
-                        var to = from + self.len
-                        if from < self.allItems.count {
-                            if to > self.allItems.count {
-                                to = self.allItems.count
-                            }
-                            viewer.append(data: Array(self.allItems[from..<to])) {
-                                viewer.stopPushToRefresh()
-                                self.page += 1
-                            }
-                        } else {
-                            print("No more data")
-                            viewer.stopPushToRefresh()
-                        }
-                    }
-                }).show(in: self.view, of: self)
-
-        collectionsViewer?.view.backgroundColor = UIColor.green
+                self.collectionsViewer?.append(data: Array(self.allItems[from..<to])) {
+                    if !self.isReversed {self.collectionsViewer?.stopPushToRefresh()}
+                    else {self.collectionsViewer?.stopPullToRefresh()}
+                    self.page += 1
+                }
+            } else {
+                print("No more data")
+                if !self.isReversed {self.collectionsViewer?.stopPushToRefresh()}
+                else {self.collectionsViewer?.stopPullToRefresh()}
+            }
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -186,6 +175,43 @@ class NumberTwoExampleCell: UICollectionViewCell {
                 image?.image = exampleTwoItem.image
             }
         }
+    }
+
+    public static func attrsFrom(indexPath: IndexPath, width: CGFloat, exampleTwoItem: ExampleTwoItem) -> CollectionsViewerLayoutAttributes {
+        let imageRect = UICollectionViewCell.rectFor(exampleTwoItem.image, with: width, and: CGFloat.greatestFiniteMagnitude)
+        var totalHeight = imageRect.height
+
+        var font = UIFont.systemFont(ofSize: 17.0)
+        let titleHeight = UICollectionViewCell.heightFor(exampleTwoItem.title , with: font, and: width)
+        totalHeight += titleHeight
+
+        font = UIFont.systemFont(ofSize: 15.0)
+        let textHeight = UICollectionViewCell.heightFor(exampleTwoItem.text , with: font, and: width)
+        totalHeight += textHeight
+
+        let attrs = CollectionsViewerLayoutAttributes(forCellWith: indexPath)
+        attrs.frame = CGRect(x: 0, y: 0, width: width, height: totalHeight)
+        attrs.dimensions = [
+            NumberTwoExampleCell.IMAGEVIEWHEIGHT : imageRect.height,
+            NumberTwoExampleCell.TEXTVIEWHEIGHT : textHeight,
+        ]
+        return attrs
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.setup()
+    }
+
+    required init(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)!
+        self.setup()
+    }
+
+    func setup() {
+        backgroundColor = UIColor.white
+        layer.cornerRadius = 4
+        layer.masksToBounds = true
     }
 
     override func apply(_ layoutAttributes: UICollectionViewLayoutAttributes) {

@@ -48,6 +48,17 @@ class CollectionsViewerLayout: UICollectionViewLayout {
     // 4
     var configuredCellViewAttributes: ((IndexPath, CGFloat) -> (CollectionsViewerLayoutAttributes))!
 
+    public internal(set) var isReversed = false
+
+    init(_ reverse: Bool = false) {
+        isReversed = reverse
+        super.init()
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+
     override class var layoutAttributesClass : AnyClass {
         return CollectionsViewerLayoutAttributes.self
     }
@@ -93,6 +104,19 @@ class CollectionsViewerLayout: UICollectionViewLayout {
                 contentHeight = max(contentHeight, frame.maxY)
                 yOffset[column] = yOffset[column] + height
                 column = column >= (columnsNum - 1) ? 0 : (column+1)
+            }
+
+            if isReversed {
+                cache.forEach { attributes in
+                    let collectionHeight = collectionView?.frame.height ?? 0
+                    let totalHeight = contentHeight > collectionHeight ? contentHeight : collectionHeight
+
+                    var frame = attributes.frame
+                    var origin = frame.origin
+                    origin.y = totalHeight - origin.y - frame.height
+                    frame.origin = origin
+                    attributes.frame = frame
+                }
             }
         }
     }
