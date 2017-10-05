@@ -30,7 +30,36 @@ class CollectionsViewer: UICollectionViewController {
     internal var bottomProgressIndicator: BottomProgressIndicator?
     internal var indicatorInset: CGFloat = 50.0
     internal var contentInset: UIEdgeInsets?
-    internal var oldContentOffset : CGFloat = 0
+    internal var oldContentOffsetY: CGFloat = 0
+
+    // Sometimes for some reason contentHeight values might have too many
+    // numbers after coma, something like '3182.00439372935', and this breaks
+    // condition that defines should we scroll to bottom or not. That's why
+    // it is safer to use here 'round' function for each value
+
+    fileprivate var contentHeight : CGFloat {
+        get {
+            return round((self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentHeight ?? 0)
+        }
+    }
+
+    fileprivate var contentWidth : CGFloat {
+        get {
+            return round((self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentWidth ?? 0)
+        }
+    }
+
+    fileprivate var contentOffsetY: CGFloat {
+        get {
+            return round(self.collectionView?.contentOffset.y ?? 0)
+        }
+    }
+
+    fileprivate var collectionHeight : CGFloat {
+        get {
+            return round(self.collectionView?.frame.height ?? 0)
+        }
+    }
 
     static public func create(for data: [Any], reverse: Bool = false) -> CollectionsViewer {
         let layout = CollectionsViewerLayout(reverse)
@@ -174,8 +203,6 @@ extension CollectionsViewer {
 
         contentInset = collectionView!.contentInset;
         if isReversed {
-            let collectionHeight = round(self.collectionView?.frame.height ?? 0)
-            let contentHeight = (self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentHeight ?? 0
             if contentHeight < collectionHeight {
                 contentInset?.bottom += collectionHeight - contentHeight + indicatorInset
             } else {
@@ -229,24 +256,17 @@ extension CollectionsViewer {
         }
 
         self.setScrollView(contentInset: contentInset, animated: false) { finished in
-            // Sometimes for some reason contentHeight values might have too many
-            // numbers after coma, something like '3182.00439372935', and this breaks
-            // condition that defines should we scroll to bottom or not. That's why
-            // it is safer to use here 'round' function for each value
-            let contentHeight = round((self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentHeight ?? 0)
-            let contentOffset = round(self.collectionView?.contentOffset.y ?? 0)
-            let collectionHeight = round(self.collectionView?.frame.height ?? 0)
-
             if self.isReversed {
-                if contentHeight < collectionHeight {
+                if self.contentHeight < self.collectionHeight {
                     let contentOffset = CGPoint(x: self.collectionView!.contentOffset.x, y: 0)
                     self.collectionView?.setContentOffset(contentOffset, animated: true)
                 } else {
-                    let contentOffset = CGPoint(x: self.collectionView!.contentOffset.x, y: contentHeight - collectionHeight)
+                    // Not giving desired results for some reason
+                    let contentOffset = CGPoint(x: self.collectionView!.contentOffset.x, y: self.contentHeight - self.collectionHeight)
                     self.collectionView?.setContentOffset(contentOffset, animated: true)
                 }
             } else {
-                if (contentHeight > collectionHeight) && (contentOffset + collectionHeight >= contentHeight + self.indicatorInset) {
+                if (self.contentHeight > self.collectionHeight) && (self.contentOffsetY + self.collectionHeight >= self.contentHeight + self.indicatorInset) {
                     let contentOffset = CGPoint(x: self.collectionView!.contentOffset.x, y: self.collectionView!.contentOffset.y - self.indicatorInset)
                     self.collectionView?.setContentOffset(contentOffset, animated: true)
                 }
@@ -257,24 +277,21 @@ extension CollectionsViewer {
     public override func scrollViewDidScroll(_ scrollView: UIScrollView) {
         if data == nil {return}
 
-        let contentHeight = (self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentHeight ?? 0
-        let contentOffset = self.collectionView?.contentOffset.y ?? 0
-        let collectionHeight = collectionView?.frame.height ?? 0
+        if contentHeight == 0 && self.data?.count ?? 0 > 0 {return}
 
-//        print("ch = \(contentHeight) co = \(contentOffset) h = \(collectionHeight)")
-
-        let isScrollingToBtm = contentOffset - oldContentOffset > 0
-        oldContentOffset = contentOffset
+        let isScrollingToBtm = contentOffsetY - oldContentOffsetY > 0
+        oldContentOffsetY = contentOffsetY
 
         if isReversed {
             if contentHeight < collectionHeight {
-                if isPushToRefreshEnabled && !isPushingToRefresh && isScrollingToBtm && (contentOffset > 0) &&
-                           (contentOffset > pushToRefreshThreshold)  {
+                if isPushToRefreshEnabled && !isPushingToRefresh && isScrollingToBtm && (contentOffsetY > 0) &&
+                           (contentOffsetY > pushToRefreshThreshold)  {
                     startPushToRefresh()
                 }
             } else {
-                if isPushToRefreshEnabled && !isPushingToRefresh ?? isScrollingToBtm &&
-                           (contentOffset > contentHeight - collectionHeight + pushToRefreshThreshold ) {
+                if isPushToRefreshEnabled && !isPushingToRefresh && isScrollingToBtm &&
+                           (contentOffsetY < contentHeight) &&
+                           (contentOffsetY > contentHeight - collectionHeight + pushToRefreshThreshold ) {
                     startPushToRefresh()
                 }
             }
@@ -283,14 +300,14 @@ extension CollectionsViewer {
                 // This old code could used for switching back to
                 // post-scroll triggering in case of reversed ordering
                 // if contentOffset > pushToRefreshThreshold && isPushToRefreshEnabled && !isPushingToRefresh {
-                if isScrollingToBtm && contentOffset > 0.3 * pushToRefreshThreshold && isPushToRefreshEnabled && !isPushingToRefresh {
+                if isScrollingToBtm && contentOffsetY > 0.3 * pushToRefreshThreshold && isPushToRefreshEnabled && !isPushingToRefresh {
                     startPushToRefresh()
                 }
             } else {
                 // This old code could used for switching back to
                 // post-scroll triggering in case of reversed ordering
                 //  if contentOffset + collectionHeight > contentHeight + pushToRefreshThreshold && isPushToRefreshEnabled && !isPushingToRefresh {
-                if isScrollingToBtm && (contentOffset + collectionHeight + pushToRefreshThreshold >= contentHeight) && isPushToRefreshEnabled && !isPushingToRefresh {
+                if isScrollingToBtm && (contentOffsetY + collectionHeight + pushToRefreshThreshold >= contentHeight) && isPushToRefreshEnabled && !isPushingToRefresh {
                     startPushToRefresh()
                 }
             }
@@ -353,13 +370,8 @@ extension CollectionsViewer {
     }
 
     fileprivate func showProgressIndicator() {
-        let contentWidth = (self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentWidth ?? 0
-        let contentHeight = (self.collectionView?.collectionViewLayout as? CollectionsViewerLayout)?.contentHeight ?? 0
-
         if self.bottomProgressIndicator == nil { self.bottomProgressIndicator = BottomProgressIndicator() }
         if isReversed {
-            let collectionHeight = round(self.collectionView?.frame.height ?? 0)
-
             self.bottomProgressIndicator?.frame = CGRect(
                     x: 0, y: contentHeight < collectionHeight ? collectionHeight : contentHeight,
                     width: contentWidth, height: self.indicatorInset)
