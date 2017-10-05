@@ -257,13 +257,20 @@ extension CollectionsViewer {
 
         self.setScrollView(contentInset: contentInset, animated: false) { finished in
             if self.isReversed {
-                if self.contentHeight < self.collectionHeight {
-                    let contentOffset = CGPoint(x: self.collectionView!.contentOffset.x, y: 0)
-                    self.collectionView?.setContentOffset(contentOffset, animated: true)
-                } else {
-                    // Not giving desired results for some reason
-                    let contentOffset = CGPoint(x: self.collectionView!.contentOffset.x, y: self.contentHeight - self.collectionHeight)
-                    self.collectionView?.setContentOffset(contentOffset, animated: true)
+                DispatchQueue.global(qos: .userInitiated).async {
+                    usleep(300)
+                    DispatchQueue.main.async {
+                        let contentOffset = CGPoint(x: self.collectionView!.contentOffset.x, y: self.contentHeight - self.collectionHeight)
+                        self.collectionView?.setContentOffset(contentOffset, animated: true)
+
+                        if self.contentHeight < self.collectionHeight {
+                            let contentOffset = CGPoint(x: self.collectionView!.contentOffset.x, y: 0)
+                            self.collectionView?.setContentOffset(contentOffset, animated: true)
+                        } else {
+                            let contentOffset = CGPoint(x: self.collectionView!.contentOffset.x, y: self.contentHeight - self.collectionHeight)
+                            self.collectionView?.setContentOffset(contentOffset, animated: true)
+                        }
+                    }
                 }
             } else {
                 if (self.contentHeight > self.collectionHeight) && (self.contentOffsetY + self.collectionHeight >= self.contentHeight + self.indicatorInset) {
@@ -275,6 +282,8 @@ extension CollectionsViewer {
     }
 
     public override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+//        print("ch = \(contentHeight) co = \(contentOffsetY) h = \(collectionHeight)")
+
         if data == nil {return}
 
         if contentHeight == 0 && self.data?.count ?? 0 > 0 {return}
