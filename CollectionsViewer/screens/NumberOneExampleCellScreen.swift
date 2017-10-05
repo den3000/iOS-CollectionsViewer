@@ -83,7 +83,7 @@ class NumberOneExampleCellScreen: UIViewController {
         }
 
         page = 1
-        collectionsViewer = CollectionsViewer.create(for: Array(allData[0..<len]))
+        collectionsViewer = CollectionsViewer.create(for: Array(allData[0..<len]), reverse: isReversed)
             .configureCollectionView { collectionView in
                 collectionView.backgroundColor = UIColor.white
             }
@@ -105,8 +105,8 @@ class NumberOneExampleCellScreen: UIViewController {
                 } else {
                     return UIDevice.current.userInterfaceIdiom == .pad ? 4 : 2
                 }
-            }.enablePullToRefresh { _ in self.onRefresh() }
-            .enablePushToRefresh { _ in self.onNeedMore() }
+            }.enablePullToRefresh { _ in self.isReversed ? self.onNeedMore() : self.onRefresh() }
+            .enablePushToRefresh { _ in self.isReversed ? self.onRefresh() : self.onNeedMore() }
             .show(in: self.view, of: self)
     }
 
@@ -115,10 +115,12 @@ class NumberOneExampleCellScreen: UIViewController {
             self.page = 0
 
             print("Refresh, page = \(self.page)")
-            sleep(4)
+            sleep(3)
 
             self.collectionsViewer?.set(data: Array(self.allData[0..<self.len])) {
-                self.collectionsViewer?.stopPullToRefresh()
+                if !self.isReversed {self.collectionsViewer?.stopPullToRefresh()}
+                else {self.collectionsViewer?.stopPushToRefresh()}
+
                 self.page += 1
             }
         }
@@ -127,7 +129,8 @@ class NumberOneExampleCellScreen: UIViewController {
     private func onNeedMore() {
         DispatchQueue.global(qos: .userInitiated).async {
             print("Append, page = \(self.page)")
-            sleep(4)
+            sleep(3)
+
             let from = self.page * self.len
             var to = from + self.len
             if from < self.allData.count {
@@ -135,12 +138,14 @@ class NumberOneExampleCellScreen: UIViewController {
                     to = self.allData.count
                 }
                 self.collectionsViewer?.append(data: Array(self.allData[from..<to])) {
-                    self.collectionsViewer?.stopPushToRefresh()
+                    if !self.isReversed {self.collectionsViewer?.stopPushToRefresh()}
+                    else {self.collectionsViewer?.stopPullToRefresh()}
                     self.page += 1
                 }
             } else {
                 print("No more data")
-                self.collectionsViewer?.stopPushToRefresh()
+                if !self.isReversed {self.collectionsViewer?.stopPushToRefresh()}
+                else {self.collectionsViewer?.stopPullToRefresh()}
             }
         }
     }
@@ -193,10 +198,7 @@ class NumberOneExampleCell: UICollectionViewCell {
     }
 
     func setup() {
-
         backgroundColor = UIColor.gray
-
-//        setNeedsLayout()
     }
 
     override func apply(_ layoutAttributes: UICollectionViewLayoutAttributes) {
