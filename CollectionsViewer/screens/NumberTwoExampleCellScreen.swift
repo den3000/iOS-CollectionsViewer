@@ -11,14 +11,17 @@ import AVFoundation
 
 class NumberTwoExampleCellScreen: UIViewController {
 
+    public internal(set) var isReversed = false
     private var page = 0;
     private let len = 3
     private let allItems = ExampleTwoItem.allItems();
 
     var collectionsViewer: CollectionsViewer?
 
-    static func show(in viewController: UIViewController?) {
-        viewController?.navigationController?.pushViewController(NumberTwoExampleCellScreen(nibName: nil, bundle: nil), animated: true)
+    static func show(in viewController: UIViewController?, reverse: Bool) {
+        let vc = NumberTwoExampleCellScreen(nibName: nil, bundle: nil)
+        vc.isReversed = reverse
+        viewController?.navigationController?.pushViewController(vc, animated: true)
     }
 
     override func viewDidLoad() {
@@ -31,7 +34,7 @@ class NumberTwoExampleCellScreen: UIViewController {
         }
 
         page = 1
-        collectionsViewer = CollectionsViewer.create(for: Array(allItems[0..<len]))
+        collectionsViewer = CollectionsViewer.create(for: Array(allItems[0..<len]), reverse: isReversed)
             .configureCollectionView { collectionView in
                 if let patternImage = UIImage(named: "pattern") {
                     collectionView.backgroundColor = UIColor(patternImage: patternImage)
@@ -55,8 +58,8 @@ class NumberTwoExampleCellScreen: UIViewController {
                 } else {
                     return UIDevice.current.userInterfaceIdiom == .pad ? 4 : 2
                 }
-            }.enablePullToRefresh { _ in self.onRefresh() }
-            .enablePushToRefresh { _ in self.onNeedMore() }
+            }.enablePullToRefresh { _ in self.isReversed ? self.onNeedMore() : self.onRefresh() }
+            .enablePushToRefresh { _ in self.isReversed ? self.onRefresh() : self.onNeedMore() }
             .show(in: self.view, of: self)
     }
 
@@ -65,10 +68,11 @@ class NumberTwoExampleCellScreen: UIViewController {
             self.page = 0
 
             print("Refresh, page = \(self.page)")
-            sleep(2)
+            sleep(3)
 
             self.collectionsViewer?.set(data: Array(self.allItems[0..<self.len])) {
-                self.collectionsViewer?.stopPullToRefresh()
+                if !self.isReversed {self.collectionsViewer?.stopPullToRefresh()}
+                else {self.collectionsViewer?.stopPushToRefresh()}
                 self.page += 1
             }
         }
@@ -77,7 +81,8 @@ class NumberTwoExampleCellScreen: UIViewController {
     private func onNeedMore() {
         DispatchQueue.global(qos: .userInitiated).async {
             print("Append, page = \(self.page)")
-            sleep(2)
+            sleep(3)
+
             let from = self.page * self.len
             var to = from + self.len
             if from < self.allItems.count {
@@ -85,12 +90,14 @@ class NumberTwoExampleCellScreen: UIViewController {
                     to = self.allItems.count
                 }
                 self.collectionsViewer?.append(data: Array(self.allItems[from..<to])) {
-                    self.collectionsViewer?.stopPushToRefresh()
+                    if !self.isReversed {self.collectionsViewer?.stopPushToRefresh()}
+                    else {self.collectionsViewer?.stopPullToRefresh()}
                     self.page += 1
                 }
             } else {
                 print("No more data")
-                self.collectionsViewer?.stopPushToRefresh()
+                if !self.isReversed {self.collectionsViewer?.stopPushToRefresh()}
+                else {self.collectionsViewer?.stopPullToRefresh()}
             }
         }
     }
