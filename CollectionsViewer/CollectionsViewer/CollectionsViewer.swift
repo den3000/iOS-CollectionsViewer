@@ -32,6 +32,8 @@ class CollectionsViewer: UICollectionViewController {
     internal var contentInset: UIEdgeInsets?
     internal var oldContentOffsetY: CGFloat = 0
 
+    internal var funcOnScrollCallback: ((CollectionsViewerLayout?, UIScrollView) -> Void)?
+
     // Sometimes for some reason contentHeight values might have too many
     // numbers after coma, something like '3182.00439372935', and this breaks
     // condition that defines should we scroll to bottom or not. That's why
@@ -163,10 +165,14 @@ extension CollectionsViewer {
         return self
     }
 
-    public func startPullToRefresh(){
+    public func startPullToRefresh(force: Bool = false){
         if isPushingToRefresh { return }
 
         refreshControl?.beginRefreshing()
+
+        if force {
+            collectionView?.setContentOffset(CGPoint(x: 0, y: -0.7 * (refreshControl?.frame.height ?? 0)), animated: true)
+        }
     }
 
     public func stopPullToRefresh(){
@@ -282,7 +288,7 @@ extension CollectionsViewer {
     }
 
     public override func scrollViewDidScroll(_ scrollView: UIScrollView) {
-//        print("ch = \(contentHeight) co = \(contentOffsetY) h = \(collectionHeight)")
+        funcOnScrollCallback?(collectionView?.collectionViewLayout as? CollectionsViewerLayout, scrollView)
 
         if data == nil {return}
 
@@ -494,7 +500,7 @@ extension CollectionsViewer {
         return self
     }
 
-    func columnsNum(_ callback: @escaping ((Void) -> Int)) -> CollectionsViewer {
+    func columnsNum(_ callback: @escaping (() -> Int)) -> CollectionsViewer {
         if let layout = collectionView?.collectionViewLayout as? CollectionsViewerLayout {
             _ = layout.configureColumnsNum(callback)
         }
@@ -505,6 +511,11 @@ extension CollectionsViewer {
         if let layout = collectionView?.collectionViewLayout as? CollectionsViewerLayout {
             _ = layout.configureCellPadding(padding)
         }
+        return self
+    }
+
+    func handleScrolling(callback: @escaping ((CollectionsViewerLayout?, UIScrollView) -> Void)) -> CollectionsViewer {
+        self.funcOnScrollCallback = callback
         return self
     }
 }
