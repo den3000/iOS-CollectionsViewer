@@ -177,7 +177,7 @@ class NumberOneExampleCell: UICollectionViewCell {
 
         let font = UIFont.systemFont(ofSize: 17.0)
         let textHeight = UICollectionViewCell.heightFor(text, with: font, and: width)
-        var totalHeight = textHeight
+        let totalHeight = textHeight
 
         let attrs = CollectionsViewerLayoutAttributes(forCellWith: indexPath)
         attrs.frame = CGRect(x: 0, y: 0, width: width, height: totalHeight)
