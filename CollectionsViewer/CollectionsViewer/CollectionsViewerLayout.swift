@@ -31,7 +31,7 @@ class CollectionsViewerLayoutAttributes: UICollectionViewLayoutAttributes {
 class CollectionsViewerLayout: UICollectionViewLayout {
 
     // 1
-    var numberOfColumns: ((Void) -> Int)? = nil
+    var numberOfColumns: (() -> Int)? = nil
     var cellPadding: CGFloat = 6.0
     private var columnsNum = 1
 
@@ -159,7 +159,7 @@ extension CollectionsViewerLayout {
         return self
     }
 
-    func configureColumnsNum(_ numberOfColumns: @escaping ((Void) -> Int)) -> CollectionsViewerLayout {
+    func configureColumnsNum(_ numberOfColumns: @escaping (() -> Int)) -> CollectionsViewerLayout {
         self.numberOfColumns = numberOfColumns
         return self
     }
